@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin • Malik Service</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="app-body">
+
+  <aside class="sidebar admin-sidebar">
+    <a href="./index.html" class="brand">
+      <i class="fa-solid fa-shield-halved"></i> Admin Panel
+    </a>
+    <nav class="side-nav">
+      <a href="#" class="active"><i class="fa-solid fa-list"></i> Semua Pesanan</a>
+    </nav>
+    <div class="side-footer">
+      <div class="user-chip">
+        <div class="avatar" id="avatarNama">A</div>
+        <div>
+          <strong id="userName">Admin</strong>
+          <small id="userEmail">admin@mail.com</small>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-block" id="btnLogout">Keluar</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <h1>Kelola Pesanan</h1>
+      <span class="badge-user badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span>
+    </header>
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <span class="stat-label">Total</span>
+        <strong id="statTotal">0</strong>
+      </div>
+      <div class="stat-card stat-pending">
+        <span class="stat-label">Menunggu</span>
+        <strong id="statPending">0</strong>
+      </div>
+      <div class="stat-card stat-progress">
+        <span class="stat-label">Diproses</span>
+        <strong id="statProgress">0</strong>
+      </div>
+      <div class="stat-card stat-done">
+        <span class="stat-label">Selesai</span>
+        <strong id="statDone">0</strong>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Nama</th>
+              <th>Telepon</th>
+              <th>Layanan</th>
+              <th>Alamat</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tableOrders">
+            <tr><td colspan="7" class="muted center">Memuat...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./js/supabase.js"></script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/admin.js"></script>
+</body>
+</html>
