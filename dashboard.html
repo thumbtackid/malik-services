@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard • Malik Service</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="app-body">
+
+  <aside class="sidebar">
+    <a href="./index.html" class="brand">
+      <i class="fa-solid fa-screwdriver-wrench"></i> Malik Service
+    </a>
+    <nav class="side-nav">
+      <a href="#" class="active"><i class="fa-solid fa-house"></i> Dashboard</a>
+      <a href="#" id="menuOrder"><i class="fa-solid fa-plus"></i> Pesan Baru</a>
+      <a href="#" id="menuRiwayat"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</a>
+    </nav>
+    <div class="side-footer">
+      <div class="user-chip">
+        <div class="avatar" id="avatarNama">U</div>
+        <div>
+          <strong id="userName">User</strong>
+          <small id="userEmail">user@mail.com</small>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-block" id="btnLogout">Keluar</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <h1 id="pageTitle">Dashboard</h1>
+      <span class="badge-user"><i class="fa-solid fa-user"></i> Pelanggan</span>
+    </header>
+
+    <!-- FORM ORDER -->
+    <section class="card" id="sectionOrder">
+      <h2>Pesan Layanan Baru</h2>
+      <form id="formOrder" class="form-grid">
+        <div class="field">
+          <label>Nama</label>
+          <input type="text" id="orderNama" required>
+        </div>
+        <div class="field">
+          <label>No. WhatsApp</label>
+          <input type="tel" id="orderTelepon" placeholder="08xxxxxxxxxx" required>
+        </div>
+        <div class="field">
+          <label>Alamat</label>
+          <input type="text" id="orderAlamat" placeholder="Alamat lengkap" required>
+        </div>
+        <div class="field">
+          <label>Layanan</label>
+          <select id="orderLayanan" required>
+            <option value="">-- Pilih --</option>
+            <option>Servis AC</option>
+            <option>Servis Elektronik</option>
+            <option>Servis Motor</option>
+            <option>Servis Mobil</option>
+            <option>Instalasi Listrik</option>
+            <option>Saluran Air</option>
+          </select>
+        </div>
+        <div class="field field-full">
+          <label>Catatan (opsional)</label>
+          <textarea id="orderCatatan" rows="3" placeholder="Keluhan / detail..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block field-full" id="btnOrder">
+          Kirim Pesanan
+        </button>
+      </form>
+    </section>
+
+    <!-- RIWAYAT -->
+    <section class="card" id="sectionRiwayat">
+      <h2>Riwayat Pesanan</h2>
+      <div id="riwayatList" class="list">
+        <p class="muted">Memuat...</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./js/supabase.js"></script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/user.js"></script>
+</body>
+</html>
