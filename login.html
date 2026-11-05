@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk • Malik Service</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="auth-body">
+
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <a href="./index.html" class="brand">
+        <i class="fa-solid fa-screwdriver-wrench"></i> Malik Service
+      </a>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Masuk</button>
+        <button class="auth-tab" data-tab="register">Daftar</button>
+      </div>
+
+      <!-- LOGIN -->
+      <form id="formLogin" class="auth-form">
+        <h2>Selamat Datang</h2>
+        <p class="muted">Masuk untuk memesan layanan</p>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="nama@email.com" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="loginPass" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="btnLogin">Masuk</button>
+        <p class="auth-msg" id="loginMsg"></p>
+      </form>
+
+      <!-- REGISTER -->
+      <form id="formRegister" class="auth-form hidden">
+        <h2>Buat Akun</h2>
+        <p class="muted">Daftar gratis dalam hitungan detik</p>
+        <div class="field">
+          <label>Nama Lengkap</label>
+          <input type="text" id="regNama" placeholder="Nama kamu" required>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="nama@email.com" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="regPass" placeholder="Minimal 6 karakter" minlength="6" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="btnRegister">Daftar</button>
+        <p class="auth-msg" id="regMsg"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./js/supabase.js"></script>
+  <script src="./js/auth.js"></script>
+</body>
+</html>
