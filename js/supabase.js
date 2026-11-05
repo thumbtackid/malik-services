@@ -2,7 +2,7 @@
 // KONFIGURASI SUPABASE
 // Ganti dengan milikmu nanti (panduan di bawah)
 // ==========================================
-const SUPABASE_URL = "https://nudlxdmfroehbfwhqglv.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://nudlxdmfroehbfwhqglv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51ZGx4ZG1mcm9laGJmd2hxZ2x2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4NTgxMzEsImV4cCI6MjEwOTQzNDEzMX0.idsWDwquxV2bhH7yNGEV47JOmAA8i471BhwTXC_xZb8";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
