@@ -40,7 +40,11 @@ async function loadRiwayat() {
   
   document.getElementById("riwayatList").innerHTML = data.map(o => `
     <div style="border:1px solid var(--border); padding:20px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; background:var(--bg-main);">
-      <div><strong style="font-size:1.1rem;">${o.layanan}</strong><br><small style="color:var(--text-muted);">${new Date(o.created_at).toLocaleString('id-ID')}</small></div>
+      <div>
+        <strong style="font-size:1.1rem;">${o.layanan}</strong><br>
+        <small style="color:var(--text-muted);">${new Date(o.created_at).toLocaleString('id-ID')}</small><br>
+        <small style="color:var(--text-main); font-weight:600;">Biaya: ${o.biaya ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(o.biaya) : '-'}</small>
+      </div>
       <div style="display:flex; align-items:center; gap:12px;">
         <span class="badge ${badge[o.status]}">${label[o.status]}</span>
         ${o.status === 'done' ? `<button class="btn btn-outline" style="padding:6px 12px; font-size:0.85rem;" onclick="cetakNota('${o.id}')"><i class="fa-solid fa-print"></i> Nota</button>` : ''}
@@ -70,21 +74,49 @@ document.getElementById('btnSendChat')?.addEventListener('click', async () => {
 
 async function cetakNota(orderId) {
   const { data } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
+  
+  const tgl = new Date(data.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+  const biaya = data.biaya ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(data.biaya) : 'Rp 0';
+
   const printWindow = window.open('', '_blank');
   printWindow.document.write(`
-    <html><head><title>Nota - ${data.nama}</title><link rel="stylesheet" href="./css/style.css"></head>
-    <body style="background:#fff; padding:40px;">
+    <html><head><title>Nota - ${data.nama}</title>
+    <style>
+      body { font-family: 'Courier New', monospace; padding: 20px; color: #000; }
+      .nota { max-width: 400px; margin: 0 auto; border: 2px dashed #000; padding: 20px; }
+      .header { text-align: center; margin-bottom: 20px; }
+      .line { border-top: 1px dashed #000; margin: 10px 0; }
+      .row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 14px; }
+      .total { font-size: 18px; font-weight: bold; margin-top: 15px; }
+      .footer { text-align: center; font-size: 12px; margin-top: 20px; }
+      @media print {
+        body { padding: 0; }
+        .no-print { display: none; }
+      }
+    </style>
+    </head>
+    <body>
       <div class="nota">
-        <h2 style="text-align:center;">MALIK SERVICE</h2>
-        <p style="text-align:center; font-size:12px;">Semarang, Jawa Tengah</p><hr>
-        <p>Tgl: ${new Date(data.created_at).toLocaleDateString('id-ID')}</p>
-        <p>Nama: ${data.nama}</p>
-        <p>Layanan: ${data.layanan}</p>
-        <p>Keluhan: ${data.catatan || '-'}</p><hr>
-        <h3 style="text-align:center;">LUNAS</h3>
+        <div class="header">
+          <h2 style="margin:0;">MALIK SERVICE</h2>
+          <p style="margin:5px 0; font-size:12px;">Semarang, Jawa Tengah<br>Telp: 0812-3456-7890</p>
+        </div>
+        <div class="line"></div>
+        <div class="row"><span>No. Nota</span><span>#${data.id.split('-')[0].toUpperCase()}</span></div>
+        <div class="row"><span>Tanggal</span><span>${tgl}</span></div>
+        <div class="row"><span>Pelanggan</span><span>${data.nama}</span></div>
+        <div class="row"><span>Layanan</span><span>${data.layanan}</span></div>
+        <div class="row"><span>Catatan</span><span>${data.catatan || '-'}</span></div>
+        <div class="line"></div>
+        <div class="row total"><span>TOTAL</span><span>${biaya}</span></div>
+        <div class="line"></div>
+        <div class="footer">
+          <p>Status: <strong>${data.status.toUpperCase()}</strong></p>
+          <p>Terima kasih telah menggunakan layanan kami.</p>
+        </div>
       </div>
       <div style="text-align:center; margin-top:20px;" class="no-print">
-        <button onclick="window.print()" style="padding:10px 20px; cursor:pointer;">Print / Save as PDF</button>
+        <button onclick="window.print()" style="padding:10px 20px; cursor:pointer; background:#4f46e5; color:#fff; border:none; border-radius:8px;">Print / Save as PDF</button>
       </div>
     </body></html>
   `);
