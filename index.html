@@ -2,22 +2,72 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Malik Service • One Stop Service Semarang</title>
-  <meta name="theme-color" content="#2563eb">
-  <link rel="manifest" href="./manifest.json">
-  <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* CSS LANGSUNG DI SINI AGAR PASTI MUNCUL */
+    :root { --primary: #4f46e5; --primary-light: #e0e7ff; --text-main: #0f172a; --text-muted: #64748b; --border: #e2e8f0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: #f8fafc; color: var(--text-main); line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    .hidden { display: none !important; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    
+    .navbar { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.25rem; color: var(--primary); }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a { font-weight: 600; color: var(--text-muted); transition: 0.2s; }
+    .nav-links a:hover { color: var(--primary); }
+    .nav-actions { display: flex; gap: 12px; }
+    
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; font-size: 0.95rem; }
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+    .btn-primary:hover { background: #4338ca; transform: translateY(-2px); }
+    .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-main); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .btn-lg { padding: 16px 32px; font-size: 1.05rem; }
+    
+    .hero { padding: 80px 0; background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); }
+    .hero-inner { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
+    .badge { display: inline-block; background: var(--primary-light); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; margin-bottom: 24px; }
+    .hero h1 { font-size: 3.2rem; line-height: 1.1; margin-bottom: 20px; letter-spacing: -1px; }
+    .gradient-text { background: linear-gradient(90deg, var(--primary), #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: var(--text-muted); font-size: 1.15rem; margin-bottom: 32px; }
+    .hero-cta { display: flex; gap: 16px; margin-bottom: 48px; }
+    .hero-stats { display: flex; gap: 40px; }
+    .hero-stats strong { display: block; font-size: 2rem; color: var(--primary); }
+    .hero-stats span { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
+    
+    .section { padding: 80px 0; }
+    .section-head { text-align: center; margin-bottom: 48px; }
+    .section-head h2 { font-size: 2.2rem; margin-bottom: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .card { background: white; border-radius: 20px; padding: 32px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.3s; }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    .icon-wrap { width: 60px; height: 60px; border-radius: 16px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .icon-wrap i { font-size: 1.8rem; color: var(--primary); }
+    
+    .footer { background: var(--text-main); color: white; padding: 40px 0; text-align: center; }
+    
+    @media (max-width: 900px) {
+      .hero-inner, .grid-3 { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 2.2rem; }
+      .nav-links { display: none; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
   <nav class="navbar">
     <div class="container nav-inner">
       <a href="./index.html" class="brand">
         <i class="fa-solid fa-screwdriver-wrench"></i> Malik Service
       </a>
-      <div class="nav-links" id="navLinks">
+      <div class="nav-links">
         <a href="#layanan">Layanan</a>
         <a href="#tentang">Tentang</a>
         <a href="#kontak">Kontak</a>
@@ -25,17 +75,16 @@
       <div class="nav-actions">
         <a href="./login.html" class="btn btn-outline" id="btnLoginNav">Masuk</a>
         <a href="./dashboard.html" class="btn btn-primary hidden" id="btnDashboardNav">Dashboard</a>
-        <button class="btn btn-ghost hidden" id="btnLogoutNav">Keluar</button>
+        <button class="btn btn-outline hidden" id="btnLogoutNav">Keluar</button>
       </div>
     </div>
   </nav>
 
-  <!-- HERO -->
   <section class="hero">
     <div class="container hero-inner">
       <div class="hero-text">
-        <span class="badge">⚡ Respon Cepat • Semarang</span>
-        <h1>Servis Elektronik &amp; Kendaraan <span class="gradient-text">Tanpa Ribet</span></h1>
+        <span class="badge"><i class="fa-solid fa-bolt"></i> Respon Cepat • Semarang</span>
+        <h1>Servis Elektronik & Kendaraan <span class="gradient-text">Tanpa Ribet</span></h1>
         <p>Pesan layanan online, teknisi kami datang. AC, kulkas, motor, mobil — semua bisa.</p>
         <div class="hero-cta">
           <a href="./login.html" class="btn btn-primary btn-lg">Pesan Sekarang</a>
@@ -47,105 +96,31 @@
           <div><strong>24/7</strong><span>Support</span></div>
         </div>
       </div>
-      <div class="hero-visual">
-        <div class="hero-card">
-          <i class="fa-solid fa-wrench"></i>
-          <h3>Teknisi Profesional</h3>
-          <p>Bersertifikat &amp; berpengalaman</p>
-        </div>
-        <div class="hero-card card-2">
-          <i class="fa-solid fa-clock"></i>
-          <h3>Same Day Service</h3>
-          <p>Pesan hari ini, dikerjakan hari ini</p>
-        </div>
-      </div>
     </div>
   </section>
 
-  <!-- LAYANAN -->
   <section class="section" id="layanan">
     <div class="container">
       <div class="section-head">
         <h2>Layanan Kami</h2>
         <p>Pilih layanan yang kamu butuhkan</p>
       </div>
-      <div class="grid grid-3">
-        <div class="card feature">
+      <div class="grid-3">
+        <div class="card">
           <div class="icon-wrap"><i class="fa-solid fa-snowflake"></i></div>
           <h3>Servis AC</h3>
           <p>Cuci, isi freon, perbaikan. Semua merk.</p>
         </div>
-        <div class="card feature">
+        <div class="card">
           <div class="icon-wrap"><i class="fa-solid fa-tv"></i></div>
           <h3>Servis Elektronik</h3>
           <p>TV, kulkas, mesin cuci, dispenser.</p>
         </div>
-        <div class="card feature">
+        <div class="card">
           <div class="icon-wrap"><i class="fa-solid fa-motorcycle"></i></div>
           <h3>Servis Motor</h3>
           <p>Tune up, ganti oli, perbaikan ringan.</p>
         </div>
-        <div class="card feature">
-          <div class="icon-wrap"><i class="fa-solid fa-car"></i></div>
-          <h3>Servis Mobil</h3>
-          <p>Servis rutin, AC mobil, kelistrikan.</p>
-        </div>
-        <div class="card feature">
-          <div class="icon-wrap"><i class="fa-solid fa-bolt"></i></div>
-          <h3>Instalasi Listrik</h3>
-          <p>Pasang baru, perbaikan, cek korsleting.</p>
-        </div>
-        <div class="card feature">
-          <div class="icon-wrap"><i class="fa-solid fa-droplet"></i></div>
-          <h3>Saluran Air</h3>
-          <p>Bocor, mampet, pompa air.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TENTANG -->
-  <section class="section section-alt" id="tentang">
-    <div class="container grid grid-2 align-center">
-      <div>
-        <h2>Tentang Malik Service</h2>
-        <p>Kami hadir untuk memudahkan warga Semarang mendapatkan layanan servis terpercaya. Cukup pesan online, teknisi kami yang datang.</p>
-        <ul class="check-list">
-          <li><i class="fa-solid fa-check"></i> Teknisi terverifikasi</li>
-          <li><i class="fa-solid fa-check"></i> Harga transparan</li>
-          <li><i class="fa-solid fa-check"></i> Garansi pengerjaan</li>
-          <li><i class="fa-solid fa-check"></i> Bisa bayar setelah selesai</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3><i class="fa-solid fa-location-dot"></i> Area Layanan</h3>
-        <p>Semarang Kota, Banyumanik, Tembalang, Pedurungan, Ngaliyan, dan sekitarnya.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- KONTAK -->
-  <section class="section" id="kontak">
-    <div class="container">
-      <div class="section-head">
-        <h2>Hubungi Kami</h2>
-      </div>
-      <div class="grid grid-3">
-        <a href="https://wa.me/6281234567890" class="card contact-card">
-          <i class="fa-brands fa-whatsapp"></i>
-          <h3>WhatsApp</h3>
-          <p>0812-3456-7890</p>
-        </a>
-        <a href="mailto:halo@malikservice.id" class="card contact-card">
-          <i class="fa-solid fa-envelope"></i>
-          <h3>Email</h3>
-          <p>halo@malikservice.id</p>
-        </a>
-        <a href="#" class="card contact-card">
-          <i class="fa-solid fa-location-dot"></i>
-          <h3>Alamat</h3>
-          <p>Semarang, Jawa Tengah</p>
-        </a>
       </div>
     </div>
   </section>
@@ -159,7 +134,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./js/supabase.js"></script>
   <script>
-    // Tampilkan tombol sesuai status login
     (async () => {
       const session = await getSession();
       const btnLogin = document.getElementById("btnLoginNav");
