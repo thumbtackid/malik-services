@@ -51,10 +51,19 @@
     .icon-wrap { width: 60px; height: 60px; border-radius: 16px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
     .icon-wrap i { font-size: 1.8rem; color: var(--primary); }
     
+    /* CSS Tambahan untuk Tentang & Kontak */
+    .section-alt { background: white; }
+    .align-center { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+    .check-list { list-style: none; margin-top: 24px; }
+    .check-list li { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-weight: 600; color: var(--text-muted); }
+    .check-list li i { color: #10b981; font-size: 1.2rem; }
+    .contact-card { display: block; text-align: center; }
+    .contact-card i { font-size: 2.5rem; color: var(--primary); margin-bottom: 16px; }
+    
     .footer { background: var(--text-main); color: white; padding: 40px 0; text-align: center; }
     
     @media (max-width: 900px) {
-      .hero-inner, .grid-3 { grid-template-columns: 1fr; }
+      .hero-inner, .grid-3, .align-center { grid-template-columns: 1fr; }
       .hero h1 { font-size: 2.2rem; }
       .nav-links { display: none; }
     }
@@ -80,6 +89,7 @@
     </div>
   </nav>
 
+  <!-- HERO SECTION -->
   <section class="hero">
     <div class="container hero-inner">
       <div class="hero-text">
@@ -99,6 +109,7 @@
     </div>
   </section>
 
+  <!-- LAYANAN SECTION -->
   <section class="section" id="layanan">
     <div class="container">
       <div class="section-head">
@@ -118,13 +129,60 @@
         </div>
         <div class="card">
           <div class="icon-wrap"><i class="fa-solid fa-motorcycle"></i></div>
-          <h3>Servis Motor</h3>
-          <p>Tune up, ganti oli, perbaikan ringan.</p>
+          <h3>Servis Device</h3>
+          <p>Hp, Laptop, perbaikan ringan.</p>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- TENTANG SECTION (BARU) -->
+  <section class="section section-alt" id="tentang">
+    <div class="container align-center">
+      <div>
+        <h2 style="font-size: 2.2rem; margin-bottom: 16px;">Tentang Malik Service</h2>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">Kami hadir untuk memudahkan warga Semarang mendapatkan layanan servis terpercaya. Cukup pesan online, teknisi kami yang datang.</p>
+        <ul class="check-list">
+          <li><i class="fa-solid fa-circle-check"></i> Teknisi terverifikasi</li>
+          <li><i class="fa-solid fa-circle-check"></i> Harga transparan</li>
+          <li><i class="fa-solid fa-circle-check"></i> Garansi pengerjaan</li>
+          <li><i class="fa-solid fa-circle-check"></i> Bisa bayar setelah selesai</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom: 16px;"><i class="fa-solid fa-location-dot" style="color: var(--primary);"></i> Area Layanan</h3>
+        <p style="color: var(--text-muted);">Semarang Kota, Banyumanik, Tembalang, Pedurungan, Ngaliyan, dan sekitarnya.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- KONTAK SECTION (BARU) -->
+  <section class="section" id="kontak">
+    <div class="container">
+      <div class="section-head">
+        <h2>Hubungi Kami</h2>
+      </div>
+      <div class="grid-3">
+        <a href="https://wa.me/6281234567890" class="card contact-card">
+          <i class="fa-brands fa-whatsapp"></i>
+          <h3>WhatsApp</h3>
+          <p style="color: var(--text-muted);">0857-1308-7659</p>
+        </a>
+        <a href="mailto:halo@malikservice.id" class="card contact-card">
+          <i class="fa-solid fa-envelope"></i>
+          <h3>Email</h3>
+          <p style="color: var(--text-muted);">thumbtackid@gmail.com</p>
+        </a>
+        <a href="#" class="card contact-card">
+          <i class="fa-solid fa-location-dot"></i>
+          <h3>Alamat</h3>
+          <p style="color: var(--text-muted);">Semarang, Jawa Tengah</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
   <footer class="footer">
     <div class="container">
       <p>© 2025 Malik Service. Dibuat dengan <i class="fa-solid fa-heart"></i> di Semarang.</p>
