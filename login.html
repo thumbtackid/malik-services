@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="auth-body">
-
   <div class="auth-wrap">
     <div class="auth-card">
       <a href="./index.html" class="brand" style="justify-content: center; margin-bottom: 32px;">
@@ -18,20 +17,14 @@
       <div class="auth-tabs">
         <button class="auth-tab active" data-tab="login">Masuk</button>
         <button class="auth-tab" data-tab="register">Daftar</button>
+        <button class="auth-tab" data-tab="forgot">Lupa?</button>
       </div>
 
       <!-- LOGIN -->
       <form id="formLogin" class="auth-form">
         <h2 style="margin-bottom: 8px;">Selamat Datang</h2>
-        <p class="muted" style="margin-bottom: 24px; color: var(--text-muted);">Masuk untuk memesan layanan</p>
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="loginEmail" placeholder="nama@email.com" required>
-        </div>
-        <div class="field">
-          <label>Password</label>
-          <input type="password" id="loginPass" placeholder="••••••••" required>
-        </div>
+        <div class="field"><label>Email</label><input type="email" id="loginEmail" required></div>
+        <div class="field"><label>Password</label><input type="password" id="loginPass" required></div>
         <button type="submit" class="btn btn-primary btn-block" id="btnLogin">Masuk</button>
         <p class="auth-msg" id="loginMsg" style="margin-top: 16px; font-size: 0.85rem; text-align: center;"></p>
       </form>
@@ -39,25 +32,40 @@
       <!-- REGISTER -->
       <form id="formRegister" class="auth-form hidden">
         <h2 style="margin-bottom: 8px;">Buat Akun</h2>
-        <p class="muted" style="margin-bottom: 24px; color: var(--text-muted);">Daftar gratis dalam hitungan detik</p>
-        <div class="field">
-          <label>Nama Lengkap</label>
-          <input type="text" id="regNama" placeholder="Nama kamu" required>
+        <div class="field"><label>Nama Lengkap</label><input type="text" id="regNama" required></div>
+        <div class="field"><label>Email</label><input type="email" id="regEmail" required></div>
+        <div class="field"><label>Password (min 6)</label><input type="password" id="regPass" minlength="6" required></div>
+        <div class="field"><label>Pertanyaan Keamanan (Untuk Lupa Password)</label>
+          <select id="regQuestion">
+            <option value="Siapa nama hewan peliharaan pertama Anda?">Siapa nama hewan peliharaan pertama Anda?</option>
+            <option value="Apa nama kota kelahiran Anda?">Apa nama kota kelahiran Anda?</option>
+            <option value="Siapa nama guru favorit Anda?">Siapa nama guru favorit Anda?</option>
+          </select>
         </div>
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="regEmail" placeholder="nama@email.com" required>
-        </div>
-        <div class="field">
-          <label>Password</label>
-          <input type="password" id="regPass" placeholder="Minimal 6 karakter" minlength="6" required>
-        </div>
+        <div class="field"><label>Jawaban Keamanan</label><input type="text" id="regAnswer" required></div>
         <button type="submit" class="btn btn-primary btn-block" id="btnRegister">Daftar</button>
         <p class="auth-msg" id="regMsg" style="margin-top: 16px; font-size: 0.85rem; text-align: center;"></p>
       </form>
+
+      <!-- FORGOT PASSWORD -->
+      <form id="formForgot" class="auth-form hidden">
+        <h2 style="margin-bottom: 8px;">Reset Password</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">Masukkan email dan jawaban keamanan Anda untuk mengganti password.</p>
+        <div class="field"><label>Email</label><input type="email" id="forgotEmail" required></div>
+        <div class="field" id="questionContainer" style="display: none;">
+          <label id="questionLabel"></label>
+          <input type="text" id="forgotAnswer" required>
+        </div>
+        <div class="field" id="newPassContainer" style="display: none;">
+          <label>Password Baru</label>
+          <input type="password" id="forgotNewPass" minlength="6" required>
+        </div>
+        <button type="button" class="btn btn-outline btn-block" id="btnCheckEmail" style="margin-bottom: 10px;">Cek Email</button>
+        <button type="button" class="btn btn-primary btn-block hidden" id="btnResetPass">Simpan Password Baru</button>
+        <p class="auth-msg" id="forgotMsg" style="margin-top: 16px; font-size: 0.85rem; text-align: center;"></p>
+      </form>
     </div>
   </div>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./js/supabase.js"></script>
   <script src="./js/auth.js"></script>

@@ -21,26 +21,27 @@
   </aside>
 
   <main class="main">
-    <!-- ORDER TAB -->
     <div id="tab-order" class="card">
       <h2 style="margin-bottom:24px;">Pesan Layanan Baru</h2>
       <form id="formOrder" class="grid-2">
         <div class="field"><label>Nama</label><input type="text" id="orderNama" required></div>
         <div class="field"><label>Telepon/WA</label><input type="tel" id="orderTelepon" required></div>
-        <div class="field"><label>Alamat Lengkap</label><input type="text" id="orderAlamat" required></div>
+        <div class="field" style="grid-column: 1/-1;"><label>Alamat Lengkap</label><input type="text" id="orderAlamat" required></div>
         <div class="field"><label>Pilih Layanan</label><select id="orderLayanan" required></select></div>
-        <div class="field" style="grid-column: 1/-1;"><label>Catatan</label><textarea id="orderCatatan" rows="2"></textarea></div>
+        <!-- USER HANYA INPUT KELUHAN -->
+        <div class="field" style="grid-column: 1/-1;">
+          <label>Keluhan Spesifik</label>
+          <input type="text" id="orderKeluhan" placeholder="Contoh: HP mati total, AC tidak dingin, dll" required>
+        </div>
         <button type="submit" class="btn btn-primary" style="grid-column: 1/-1;">Kirim Pesanan</button>
       </form>
     </div>
 
-    <!-- RIWAYAT TAB -->
     <div id="tab-riwayat" class="card hidden">
       <h2 style="margin-bottom:24px;">Riwayat Pesanan</h2>
       <div id="riwayatList" style="display:flex; flex-direction:column; gap:16px;"></div>
     </div>
 
-    <!-- CHAT TAB -->
     <div id="tab-chat" class="card hidden">
       <h2 style="margin-bottom:24px;">Chat dengan Admin</h2>
       <div class="chat-container">
@@ -52,7 +53,6 @@
       </div>
     </div>
   </main>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./js/supabase.js"></script>
   <script src="./js/user.js"></script>
