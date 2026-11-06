@@ -85,12 +85,3 @@ a { text-decoration: none; color: inherit; }
 .chat-me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
 .chat-them { align-self: flex-start; background: white; border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 .chat-input { display: flex; gap: 12px; }
-
-/* ====== NOTA (PRINT PDF) ====== */
-.nota { background: white; max-width: 400px; margin: 0 auto; padding: 32px; font-family: 'Courier New', monospace; color: #000; border: 2px dashed #000; }
-@media print {
-  body * { visibility: hidden; }
-  .nota, .nota * { visibility: visible; }
-  .nota { position: absolute; left: 0; top: 0; border: none; }
-  .no-print { display: none !important; }
-}
