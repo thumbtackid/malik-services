@@ -1,83 +1,75 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin • Malik Service</title>
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="app-body">
-
-  <aside class="sidebar admin-sidebar">
-    <a href="./index.html" class="brand">
-      <i class="fa-solid fa-shield-halved"></i> Admin Panel
-    </a>
+  <aside class="sidebar">
+    <div class="brand"><img src="" class="brand-logo" style="height:32px;"> <span class="brand-text">Admin</span></div>
     <nav class="side-nav">
-      <a href="#" class="active"><i class="fa-solid fa-list"></i> Semua Pesanan</a>
+      <a href="#" class="active" onclick="showTab('orders')"><i class="fa-solid fa-list"></i> Pesanan</a>
+      <a href="#" onclick="showTab('layanan')"><i class="fa-solid fa-tags"></i> Edit Layanan</a>
+      <a href="#" onclick="showTab('chat')"><i class="fa-solid fa-comments"></i> Chat Masuk</a>
+      <a href="#" onclick="showTab('setting')"><i class="fa-solid fa-gear"></i> Pengaturan</a>
     </nav>
-    <div class="side-footer">
-      <div class="user-chip">
-        <div class="avatar" id="avatarNama">A</div>
-        <div>
-          <strong id="userName">Admin</strong>
-          <small id="userEmail">admin@mail.com</small>
-        </div>
-      </div>
-      <button class="btn btn-outline btn-block" id="btnLogout">Keluar</button>
+    <div style="padding-top:20px; border-top:1px solid var(--border);">
+      <button class="btn btn-outline btn-block" onclick="logout()">Keluar</button>
     </div>
   </aside>
 
   <main class="main">
-    <header class="topbar">
-      <h1>Kelola Pesanan</h1>
-      <span class="badge-user badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span>
-    </header>
-
-    <div class="stats-grid" id="statsGrid">
-      <div class="stat-card">
-        <span class="stat-label">Total</span>
-        <strong id="statTotal">0</strong>
-      </div>
-      <div class="stat-card stat-pending">
-        <span class="stat-label">Menunggu</span>
-        <strong id="statPending">0</strong>
-      </div>
-      <div class="stat-card stat-progress">
-        <span class="stat-label">Diproses</span>
-        <strong id="statProgress">0</strong>
-      </div>
-      <div class="stat-card stat-done">
-        <span class="stat-label">Selesai</span>
-        <strong id="statDone">0</strong>
+    <!-- ORDERS TAB -->
+    <div id="tab-orders" class="card">
+      <h2 style="margin-bottom:24px;">Semua Pesanan</h2>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Nama</th><th>Layanan</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="ordersList"></tbody>
+        </table>
       </div>
     </div>
 
-    <section class="card">
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>Nama</th>
-              <th>Telepon</th>
-              <th>Layanan</th>
-              <th>Alamat</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="tableOrders">
-            <tr><td colspan="7" class="muted center">Memuat...</td></tr>
-          </tbody>
-        </table>
+    <!-- LAYANAN TAB -->
+    <div id="tab-layanan" class="card hidden">
+      <h2 style="margin-bottom:24px;">Edit Layanan</h2>
+      <form id="formLayanan" style="display:flex; gap:16px; margin-bottom:24px;">
+        <input type="text" id="newLayanan" placeholder="Nama Layanan Baru" required style="flex:1; padding:14px; border-radius:12px; border:1px solid var(--border);">
+        <button type="submit" class="btn btn-primary">Tambah</button>
+      </form>
+      <div id="layananList" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div id="tab-chat" class="card hidden">
+      <h2 style="margin-bottom:24px;">Balas Chat User</h2>
+      <div style="display:flex; gap:24px;">
+        <div style="width:30%; border-right:1px solid var(--border); padding-right:16px;" id="userList"></div>
+        <div style="flex:1;">
+          <div class="chat-box" id="adminChatBox"></div>
+          <div class="chat-input">
+            <input type="text" id="adminChatInput" placeholder="Balas pesan..." style="flex:1; padding:12px; border-radius:8px; border:1px solid var(--border);">
+            <button class="btn btn-primary" id="btnAdminSend">Kirim</button>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
+
+    <!-- SETTING TAB -->
+    <div id="tab-setting" class="card hidden">
+      <h2 style="margin-bottom:24px;">Pengaturan Web</h2>
+      <div class="field">
+        <label>URL Logo (Contoh: https://linkgambar.com/logo.png)</label>
+        <input type="text" id="logoUrl">
+        <button class="btn btn-primary" id="btnSaveLogo" style="margin-top:16px;">Simpan Logo</button>
+      </div>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./js/supabase.js"></script>
-  <script src="./js/auth.js"></script>
   <script src="./js/admin.js"></script>
 </body>
 </html>
