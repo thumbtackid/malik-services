@@ -1,4 +1,4 @@
-const CACHE_NAME = "malik-service-v3"; // Naikkan versi jika ada update besar
+const CACHE_NAME = "malik-service-v4"; // Naikkan versi jika ada update besar
 
 const ASSETS_TO_CACHE = [
   "./",
@@ -20,12 +20,9 @@ const ASSETS_TO_CACHE = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      // Gunakan Promise.allSettled agar jika 1 file gagal, yang lain tetap jalan
       const results = await Promise.allSettled(
         ASSETS_TO_CACHE.map((url) => cache.add(url))
       );
-      
-      // Log jika ada file yang gagal di-cache (misal 404)
       results.forEach((result, index) => {
         if (result.status === "rejected") {
           console.warn("Gagal cache:", ASSETS_TO_CACHE[index], result.reason);
@@ -33,7 +30,6 @@ self.addEventListener("install", (event) => {
       });
     })
   );
-  // Paksa Service Worker baru langsung aktif
   self.skipWaiting();
 });
 
@@ -53,7 +49,6 @@ self.addEventListener("activate", (event) => {
       );
     })
   );
-  // Ambil kendali atas semua tab yang terbuka
   self.clients.claim();
 });
 
@@ -64,17 +59,12 @@ self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // Abaikan request selain GET
   if (request.method !== "GET") return;
-
-  // Abaikan request ke domain luar (seperti Supabase, CDN FontAwesome, dll)
   if (url.origin !== self.location.origin) return;
 
-  // --- STRATEGI: Network First, fallback ke Cache ---
   event.respondWith(
     fetch(request)
       .then((networkResponse) => {
-        // Jika berhasil ambil dari internet, simpan ke cache
         if (networkResponse && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -84,16 +74,11 @@ self.addEventListener("fetch", (event) => {
         return networkResponse;
       })
       .catch(async () => {
-        // Jika internet mati / gagal, ambil dari cache
         console.log("Offline, mengambil dari cache:", request.url);
         const cachedResponse = await caches.match(request);
         
-        if (cachedResponse) {
-          return cachedResponse;
-        }
+        if (cachedResponse) return cachedResponse;
 
-        // Jika yang diminta adalah halaman HTML dan tidak ada di cache,
-        // tampilkan halaman utama (SPA fallback)
         if (request.mode === "navigate") {
           const fallback = await caches.match("./index.html");
           if (fallback) return fallback;

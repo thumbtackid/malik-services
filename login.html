@@ -11,7 +11,7 @@
 
   <div class="auth-wrap">
     <div class="auth-card">
-      <a href="./index.html" class="brand">
+      <a href="./index.html" class="brand" style="justify-content: center; margin-bottom: 32px;">
         <i class="fa-solid fa-screwdriver-wrench"></i> Malik Service
       </a>
 
@@ -22,8 +22,8 @@
 
       <!-- LOGIN -->
       <form id="formLogin" class="auth-form">
-        <h2>Selamat Datang</h2>
-        <p class="muted">Masuk untuk memesan layanan</p>
+        <h2 style="margin-bottom: 8px;">Selamat Datang</h2>
+        <p class="muted" style="margin-bottom: 24px; color: var(--text-muted);">Masuk untuk memesan layanan</p>
         <div class="field">
           <label>Email</label>
           <input type="email" id="loginEmail" placeholder="nama@email.com" required>
@@ -33,13 +33,13 @@
           <input type="password" id="loginPass" placeholder="••••••••" required>
         </div>
         <button type="submit" class="btn btn-primary btn-block" id="btnLogin">Masuk</button>
-        <p class="auth-msg" id="loginMsg"></p>
+        <p class="auth-msg" id="loginMsg" style="margin-top: 16px; font-size: 0.85rem; text-align: center;"></p>
       </form>
 
       <!-- REGISTER -->
       <form id="formRegister" class="auth-form hidden">
-        <h2>Buat Akun</h2>
-        <p class="muted">Daftar gratis dalam hitungan detik</p>
+        <h2 style="margin-bottom: 8px;">Buat Akun</h2>
+        <p class="muted" style="margin-bottom: 24px; color: var(--text-muted);">Daftar gratis dalam hitungan detik</p>
         <div class="field">
           <label>Nama Lengkap</label>
           <input type="text" id="regNama" placeholder="Nama kamu" required>
@@ -53,7 +53,7 @@
           <input type="password" id="regPass" placeholder="Minimal 6 karakter" minlength="6" required>
         </div>
         <button type="submit" class="btn btn-primary btn-block" id="btnRegister">Daftar</button>
-        <p class="auth-msg" id="regMsg"></p>
+        <p class="auth-msg" id="regMsg" style="margin-top: 16px; font-size: 0.85rem; text-align: center;"></p>
       </form>
     </div>
   </div>

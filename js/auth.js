@@ -28,6 +28,7 @@ if (formLogin) {
 
     if (error) {
       msg.className = "auth-msg error";
+      msg.style.color = "red";
       msg.textContent = error.message;
       return;
     }
@@ -61,6 +62,7 @@ if (formRegister) {
 
     if (error) {
       msg.className = "auth-msg error";
+      msg.style.color = "red";
       msg.textContent = error.message;
       return;
     }
@@ -70,11 +72,11 @@ if (formRegister) {
       window.location.href = "./dashboard.html";
     } else {
       msg.className = "auth-msg success";
+      msg.style.color = "green";
       msg.textContent = "✅ Cek email kamu untuk konfirmasi pendaftaran.";
     }
   });
 }
 
-// ===== LOGOUT (kalau ada tombol) =====
 const btnLogout = document.getElementById("btnLogout");
 if (btnLogout) btnLogout.addEventListener("click", logout);

@@ -5,15 +5,18 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function getSession() { const { data: { session } } = await supabaseClient.auth.getSession(); return session; }
 async function logout() { await supabaseClient.auth.signOut(); window.location.href = "./index.html"; }
+
 async function isAdmin(userId) {
   const { data } = await supabaseClient.from("profiles").select("role").eq("id", userId).single();
   return data?.role === "admin";
 }
+
 async function requireAuth() {
   const session = await getSession();
   if (!session) { window.location.href = "./login.html"; return null; }
   return session;
 }
+
 async function requireAdmin() {
   const session = await requireAuth();
   if (!session) return null;
@@ -25,8 +28,8 @@ async function requireAdmin() {
 async function loadLogo() {
   const { data } = await supabaseClient.from('settings').select('logo_url, nama_web').eq('id', 1).single();
   if(data) {
-    document.querySelectorAll('.brand-logo').forEach(img => img.src = data.logo_url);
-    document.querySelectorAll('.brand-text').forEach(el => el.textContent = data.nama_web);
+    document.querySelectorAll('.brand-logo').forEach(img => { if(data.logo_url) img.src = data.logo_url; });
+    document.querySelectorAll('.brand-text').forEach(el => el.textContent = data.nama_web || 'Malik Service');
   }
 }
 document.addEventListener("DOMContentLoaded", loadLogo);
