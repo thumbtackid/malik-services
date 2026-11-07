@@ -53,8 +53,58 @@
       </div>
     </div>
   </main>
+
+  <!-- ===== MODAL CHECKOUT QRIS (INI YANG HILANG SEBELUMNYA) ===== -->
+  <div id="modalCheckout" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-qrcode"></i> Pembayaran QRIS</h3>
+        <button class="modal-close" onclick="closeCheckout()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="checkout-summary" id="checkoutSummary"></div>
+        
+        <div class="qris-frame">
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+            Scan QRIS di bawah dengan aplikasi bank / e-wallet (GoPay, OVO, DANA, ShopeePay, m-banking).
+          </p>
+          <img id="qrisImage" src="" alt="QRIS" onerror="this.src='https://via.placeholder.com/300x300?text=QRIS+Belum+Diatur'">
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:12px;" id="bankInfoText"></p>
+        </div>
+
+        <div class="field" style="margin-top:20px;">
+          <label>Upload Bukti Transfer / Screenshot Pembayaran</label>
+          <input type="file" id="proofFile" accept="image/*" required>
+          <small style="color:var(--text-muted); font-size:0.8rem;">Format: JPG/PNG, maks 2MB</small>
+        </div>
+
+        <div class="field">
+          <label>Catatan (opsional)</label>
+          <input type="text" id="checkoutNote" placeholder="Contoh: transfer dari BCA a/n Budi">
+        </div>
+
+        <p id="checkoutMsg" style="font-size:0.85rem; text-align:center; margin-top:8px;"></p>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeCheckout()">Batal</button>
+        <button class="btn btn-primary" id="btnConfirmPay" onclick="submitPaymentProof()">
+          <i class="fa-solid fa-paper-plane"></i> Kirim Konfirmasi
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./js/supabase.js"></script>
   <script src="./js/user.js"></script>
 </body>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('SW Registered', reg))
+        .catch(err => console.log('SW Error', err));
+    });
+  }
+</script>
 </html>
