@@ -115,6 +115,7 @@ async function loadRiwayat() {
   `}).join("");
 }
 
+// ===== CHECKOUT QRIS =====
 function openCheckout(orderId) {
   activeOrderForPayment = orderId;
   const modal = document.getElementById('modalCheckout');
@@ -170,7 +171,9 @@ async function submitPaymentProof() {
   try {
     const ext = file.name.split('.').pop();
     const filePath = `${activeOrderForPayment}/${Date.now()}.${ext}`;
-    const { error: upErr } = await supabaseClient.storage.from('payment-proofs').upload(filePath, file, { upsert: true });
+    
+    // PERBAIKAN: Menghapus { upsert: true } agar sesuai dengan aturan RLS
+    const { error: upErr } = await supabaseClient.storage.from('payment-proofs').upload(filePath, file);
     if (upErr) throw upErr;
 
     const { data: urlData } = supabaseClient.storage.from('payment-proofs').getPublicUrl(filePath);
@@ -223,6 +226,7 @@ document.getElementById('btnSendChat')?.addEventListener('click', async () => {
   input.value = ''; loadChat();
 });
 
+// ===== CETAK NOTA =====
 async function cetakNota(orderId) {
   const { data: order } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
   if (!order) return alert("Gagal mengambil nota.");
