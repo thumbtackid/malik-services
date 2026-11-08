@@ -12,18 +12,15 @@ let activeOrderForPayment = null;
   const orderNamaEl = document.getElementById("orderNama");
   if(orderNamaEl) orderNamaEl.value = currentUser.user_metadata?.nama || "";
 
-  // Ambil settings (QRIS, bank info)
   const { data: set } = await supabaseClient.from('settings').select('*').eq('id', 1).single();
   settingsData = set || {};
 
-  // Load layanan
   const { data: services } = await supabaseClient.from('services').select('*');
   const orderLayananEl = document.getElementById('orderLayanan');
   if(orderLayananEl && services) {
-    orderLayananEl.innerHTML = services.map(s => `<option>${s.nama}</option>`).join('');
+    orderLayananEl.innerHTML = services.map(s => `<option>${escapeHTML(s.nama)}</option>`).join('');
   }
 
-  // Submit order
   const formOrder = document.getElementById("formOrder");
   if(formOrder) {
     formOrder.addEventListener("submit", async (e) => {
@@ -42,7 +39,6 @@ let activeOrderForPayment = null;
 
       if (error) { alert("Gagal: " + error.message); btn.textContent = "Kirim Pesanan"; return; }
 
-      // Notif ke admin (web)
       await supabaseClient.from('notifications').insert({
         title: 'Pesanan Baru',
         message: `Pesanan baru dari ${document.getElementById("orderNama").value} - ${document.getElementById("orderLayanan").value}`,
@@ -56,7 +52,6 @@ let activeOrderForPayment = null;
     });
   }
 
-  // Real-time chat
   supabaseClient.channel('public:chats').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chats' }, payload => {
     if(payload.new.sender_id === currentUser.id || payload.new.receiver_id === currentUser.id) loadChat();
   }).subscribe();
@@ -96,7 +91,6 @@ async function loadRiwayat() {
     const pb = payBadge[o.payment_status] || payBadge.unpaid;
     const total = o.total_amount || o.biaya || 0;
     
-    // PERBAIKAN: Tombol bayar muncul jika belum lunas / ditolak, selama tidak dibatalkan
     const needPay = (o.payment_status === 'unpaid' || o.payment_status === 'rejected' || !o.payment_status) && o.status !== 'cancel';
     const waitingVerify = o.payment_status === 'waiting_verification';
 
@@ -107,7 +101,7 @@ async function loadRiwayat() {
           <span class="badge ${badge[o.status] || 'badge-pending'}">${label[o.status] || o.status}</span>
           <span class="badge ${pb.class}">${pb.text}</span>
         </div>
-        <strong style="font-size:1.05rem;">${o.layanan} - ${o.catatan || 'Tanpa keterangan'}</strong><br>
+        <strong style="font-size:1.05rem;">${escapeHTML(o.layanan)} - ${escapeHTML(o.catatan) || 'Tanpa keterangan'}</strong><br>
         <small style="color:var(--text-muted);">${new Date(o.created_at).toLocaleString('id-ID')}</small><br>
         <small style="color:var(--text-main); font-weight:600;">Total: ${total ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(total) : 'Belum ditentukan'}</small>
         ${o.payment_status === 'rejected' && o.payment_proof_url ? `<br><small style="color:var(--danger);">Bukti ditolak, silakan upload ulang.</small>` : ''}
@@ -121,7 +115,6 @@ async function loadRiwayat() {
   `}).join("");
 }
 
-// ===== CHECKOUT QRIS =====
 function openCheckout(orderId) {
   activeOrderForPayment = orderId;
   const modal = document.getElementById('modalCheckout');
@@ -132,16 +125,15 @@ function openCheckout(orderId) {
   qrisImg.src = settingsData.qris_image_url || '';
   bankInfo.textContent = settingsData.bank_info || 'Hubungi admin jika QRIS belum muncul.';
 
-  // Ambil detail order untuk summary
   supabaseClient.from('orders').select('*').eq('id', orderId).single().then(({data}) => {
     if (data) {
       const total = data.total_amount || data.biaya || 0;
       summary.innerHTML = `
         <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-          <span>Layanan:</span><strong>${data.layanan}</strong>
+          <span>Layanan:</span><strong>${escapeHTML(data.layanan)}</strong>
         </div>
         <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-          <span>Keluhan:</span><span>${data.catatan || '-'}</span>
+          <span>Keluhan:</span><span>${escapeHTML(data.catatan) || '-'}</span>
         </div>
         <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:8px; margin-top:8px;">
           <strong>Total Bayar:</strong>
@@ -176,7 +168,6 @@ async function submitPaymentProof() {
   msg.textContent = '';
 
   try {
-    // Upload ke Supabase Storage
     const ext = file.name.split('.').pop();
     const filePath = `${activeOrderForPayment}/${Date.now()}.${ext}`;
     const { error: upErr } = await supabaseClient.storage.from('payment-proofs').upload(filePath, file, { upsert: true });
@@ -184,7 +175,6 @@ async function submitPaymentProof() {
 
     const { data: urlData } = supabaseClient.storage.from('payment-proofs').getPublicUrl(filePath);
 
-    // Update order
     const { error: updErr } = await supabaseClient.from('orders').update({
       payment_status: 'waiting_verification',
       payment_proof_url: urlData.publicUrl,
@@ -194,7 +184,6 @@ async function submitPaymentProof() {
 
     if (updErr) throw updErr;
 
-    // Notif ke admin
     await supabaseClient.from('notifications').insert({
       title: 'Konfirmasi Pembayaran Baru',
       message: `User ${currentUser.email} mengunggah bukti pembayaran. Menunggu verifikasi.`,
@@ -220,7 +209,7 @@ async function loadChat() {
   const chatBox = document.getElementById('chatBox');
   if(!chatBox) return;
   chatBox.innerHTML = data.map(c => `
-    <div class="chat-msg ${c.sender_id === currentUser.id ? 'chat-me' : 'chat-them'}">${c.pesan}</div>
+    <div class="chat-msg ${c.sender_id === currentUser.id ? 'chat-me' : 'chat-them'}">${escapeHTML(c.pesan)}</div>
   `).join('');
   chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -234,7 +223,6 @@ document.getElementById('btnSendChat')?.addEventListener('click', async () => {
   input.value = ''; loadChat();
 });
 
-// ===== CETAK NOTA =====
 async function cetakNota(orderId) {
   const { data: order } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
   if (!order) return alert("Gagal mengambil nota.");
@@ -245,12 +233,12 @@ async function cetakNota(orderId) {
   let itemsHtml = '';
   if (items && items.length > 0) {
     itemsHtml = `<div class="line"></div><div class="desc"><strong>Rincian Barang:</strong></div>
-      ${items.map(i => `<div class="row"><span>${i.nama_produk} x${i.qty}</span><span>Rp ${(i.subtotal).toLocaleString('id-ID')}</span></div>`).join('')}`;
+      ${items.map(i => `<div class="row"><span>${escapeHTML(i.nama_produk)} x${i.qty}</span><span>Rp ${(i.subtotal).toLocaleString('id-ID')}</span></div>`).join('')}`;
   }
 
   const w = window.open('', '_blank');
   w.document.write(`
-    <html><head><title>Nota - ${order.nama}</title>
+    <html><head><title>Nota - ${escapeHTML(order.nama)}</title>
     <style>
       body { font-family: 'Courier New', monospace; padding: 20px; }
       .nota { max-width: 400px; margin: 0 auto; border: 2px dashed #000; padding: 20px; }
@@ -268,12 +256,12 @@ async function cetakNota(orderId) {
         <div class="line"></div>
         <div class="row"><span>No. Nota</span><span>#${order.id.split('-')[0].toUpperCase()}</span></div>
         <div class="row"><span>Tanggal</span><span>${tgl}</span></div>
-        <div class="row"><span>Pelanggan</span><span>${order.nama}</span></div>
+        <div class="row"><span>Pelanggan</span><span>${escapeHTML(order.nama)}</span></div>
         <div class="line"></div>
-        <div class="desc"><strong>Layanan:</strong> ${order.layanan}</div>
-        ${order.catatan ? `<div class="desc"><strong>Keluhan:</strong> ${order.catatan}</div>` : ''}
-        ${order.kerusakan ? `<div class="desc"><strong>Diagnosa:</strong> ${order.kerusakan}</div>` : ''}
-        ${order.sparepart ? `<div class="desc"><strong>Sparepart:</strong> ${order.sparepart}</div>` : ''}
+        <div class="desc"><strong>Layanan:</strong> ${escapeHTML(order.layanan)}</div>
+        ${order.catatan ? `<div class="desc"><strong>Keluhan:</strong> ${escapeHTML(order.catatan)}</div>` : ''}
+        ${order.kerusakan ? `<div class="desc"><strong>Diagnosa:</strong> ${escapeHTML(order.kerusakan)}</div>` : ''}
+        ${order.sparepart ? `<div class="desc"><strong>Sparepart:</strong> ${escapeHTML(order.sparepart)}</div>` : ''}
         ${itemsHtml}
         <div class="line"></div>
         <div class="row total"><span>TOTAL</span><span>${biaya}</span></div>

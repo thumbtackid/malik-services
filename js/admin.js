@@ -42,9 +42,6 @@ function showTab(tab) {
   if (tab === 'notifikasi') loadNotifications();
 }
 
-// ==========================================
-// 1. DASHBOARD & CHART
-// ==========================================
 async function loadOrders() {
   const searchTerm = document.getElementById('searchOrder')?.value.toLowerCase() || "";
   const { data, error } = await supabaseClient.from("orders").select("*, order_items(*)").order("created_at", { ascending: false });
@@ -121,21 +118,21 @@ async function loadOrders() {
     let itemsHtml = '';
     if (o.order_items && o.order_items.length > 0) {
       itemsHtml = `<div style="margin-top:4px; padding:4px 8px; background:#f1f5f9; border-radius:6px; font-size:0.85rem;">
-        <strong>Barang:</strong> ${o.order_items.map(i => `${i.nama_produk} (x${i.qty})`).join(', ')}
+        <strong>Barang:</strong> ${o.order_items.map(i => `${escapeHTML(i.nama_produk)} (x${i.qty})`).join(', ')}
       </div>`;
     }
 
     return `
       <tr>
         <td>
-          <strong>${o.nama || '-'}</strong><br>
-          <small style="color:var(--text-muted);">${o.telepon || '-'}</small><br>
-          <small style="color:var(--primary); font-weight:600;">Keluhan: ${o.catatan || '-'}</small><br>
-          <small style="color:var(--text-main);">Diagnosa: ${o.kerusakan || '-'}</small><br>
-          <small style="color:var(--text-main);">Part: ${o.sparepart || '-'}</small>
+          <strong>${escapeHTML(o.nama) || '-'}</strong><br>
+          <small style="color:var(--text-muted);">${escapeHTML(o.telepon) || '-'}</small><br>
+          <small style="color:var(--primary); font-weight:600;">Keluhan: ${escapeHTML(o.catatan) || '-'}</small><br>
+          <small style="color:var(--text-main);">Diagnosa: ${escapeHTML(o.kerusakan) || '-'}</small><br>
+          <small style="color:var(--text-main);">Part: ${escapeHTML(o.sparepart) || '-'}</small>
           ${itemsHtml}
         </td>
-        <td>${o.layanan || '-'}</td>
+        <td>${escapeHTML(o.layanan) || '-'}</td>
         <td>
           <select onchange="updateStatus('${o.id}', this.value)" style="padding:8px; border-radius:8px; border:1px solid var(--border); font-weight:600;">
             <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Menunggu</option>
@@ -160,9 +157,6 @@ async function loadOrders() {
   }).join("");
 }
 
-// ==========================================
-// 2. VERIFIKASI PEMBAYARAN
-// ==========================================
 async function loadVerifikasiList() {
   const { data, error } = await supabaseClient.from('orders').select('*').eq('payment_status', 'waiting_verification').order('created_at', { ascending: true });
   const list = document.getElementById('verifList');
@@ -177,8 +171,8 @@ async function loadVerifikasiList() {
     <div style="border:1px solid var(--border); border-radius:12px; padding:20px; background:white; display:flex; flex-wrap:wrap; gap:20px;">
       <div style="flex:1; min-width:250px;">
         <h4 style="margin-bottom:8px;">Order #${o.id.split('-')[0].toUpperCase()}</h4>
-        <p style="font-size:0.9rem; margin-bottom:4px;"><strong>Pelanggan:</strong> ${o.nama} (${o.telepon})</p>
-        <p style="font-size:0.9rem; margin-bottom:4px;"><strong>Layanan:</strong> ${o.layanan}</p>
+        <p style="font-size:0.9rem; margin-bottom:4px;"><strong>Pelanggan:</strong> ${escapeHTML(o.nama)} (${escapeHTML(o.telepon)})</p>
+        <p style="font-size:0.9rem; margin-bottom:4px;"><strong>Layanan:</strong> ${escapeHTML(o.layanan)}</p>
         <p style="font-size:0.9rem; margin-bottom:4px;"><strong>Total Tagihan:</strong> Rp ${(o.total_amount || o.biaya || 0).toLocaleString('id-ID')}</p>
         <p style="font-size:0.9rem; margin-bottom:12px; color:var(--warning);"><strong>Status:</strong> Menunggu Verifikasi Bukti</p>
         <div style="display:flex; gap:8px; margin-top:16px;">
@@ -201,11 +195,9 @@ async function verifikasiPembayaran(orderId, isAccept) {
   const updateData = { payment_status: newStatus, verified_by: currentUser.id };
   if (isAccept) updateData.paid_at = new Date().toISOString();
 
-  // 1. Update status pesanan
   const { error } = await supabaseClient.from('orders').update(updateData).eq('id', orderId);
   if (error) return alert("Gagal update: " + error.message);
 
-  // 2. Ambil data order
   const { data: order, error: orderErr } = await supabaseClient
     .from('orders')
     .select('*')
@@ -220,18 +212,14 @@ async function verifikasiPembayaran(orderId, isAccept) {
     return;
   }
   
-  // 3. FITUR HAPUS OTOMATIS GAMBAR (Hanya jika diterima)
   if (isAccept && order.payment_proof_url) {
     try {
       const urlParts = order.payment_proof_url.split('/payment-proofs/');
       if (urlParts.length >= 2) {
         const filePath = urlParts[1];
-        
-        // Hapus file dari Storage
         const { error: deleteErr } = await supabaseClient.storage.from('payment-proofs').remove([filePath]);
         
         if (!deleteErr) {
-          // Kosongkan URL di database jika file berhasil dihapus
           await supabaseClient.from('orders').update({ payment_proof_url: null }).eq('id', orderId);
           console.log("✅ Gambar bukti berhasil dihapus otomatis.");
         } else {
@@ -243,7 +231,6 @@ async function verifikasiPembayaran(orderId, isAccept) {
     }
   }
 
-  // 4. Kirim Notifikasi Chat
   if (order.user_id) {
     const msg = isAccept 
       ? "✅ Pembayaran Anda telah diverifikasi. Pesanan sedang diproses."
@@ -251,7 +238,6 @@ async function verifikasiPembayaran(orderId, isAccept) {
     await supabaseClient.from('chats').insert({ sender_id: currentUser.id, receiver_id: order.user_id, pesan: msg });
   }
 
-  // 5. Kirim Notifikasi WA
   if (order.telepon) {
     const waNumber = order.telepon.replace(/[^0-9]/g, '').replace(/^0/, '62');
     const waPesan = isAccept 
@@ -265,9 +251,6 @@ async function verifikasiPembayaran(orderId, isAccept) {
   loadOrders();
 }
 
-// ==========================================
-// FUNGSI WA (SUDAH AMAN - MEMANGGIL EDGE FUNCTION)
-// ==========================================
 async function kirimWA(target, message) {
   try {
     const { data, error } = await supabaseClient.functions.invoke('send-wa', {
@@ -280,9 +263,6 @@ async function kirimWA(target, message) {
   }
 }
 
-// ==========================================
-// 3. NOTIFIKASI WEB
-// ==========================================
 async function loadNotifications() {
   const { data } = await supabaseClient.from('notifications').select('*').order('created_at', { ascending: false }).limit(50);
   const list = document.getElementById('notifList');
@@ -306,8 +286,8 @@ async function loadNotifications() {
         <i class="fa-solid ${n.type === 'new_order' ? 'fa-box' : 'fa-money-bill'}"></i>
       </div>
       <div style="flex:1;">
-        <strong style="font-size:0.95rem;">${n.title}</strong>
-        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">${n.message}</p>
+        <strong style="font-size:0.95rem;">${escapeHTML(n.title)}</strong>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">${escapeHTML(n.message)}</p>
         <small style="color:var(--text-muted); font-size:0.75rem;">${new Date(n.created_at).toLocaleString('id-ID')}</small>
       </div>
     </div>
@@ -319,9 +299,6 @@ async function markAllRead() {
   loadNotifications();
 }
 
-// ==========================================
-// 4. FITUR KASIR / POS
-// ==========================================
 async function loadKasirProducts() {
   let { data, error } = await supabaseClient.from('products').select('*').order('nama');
   if (error || !data || data.length === 0) {
@@ -336,10 +313,10 @@ async function loadKasirProducts() {
   list.innerHTML = data.map(p => `
     <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:12px; border-radius:8px; background:white;">
       <div>
-        <strong>${p.nama}</strong><br>
+        <strong>${escapeHTML(p.nama)}</strong><br>
         <small>Rp ${(p.harga || 0).toLocaleString('id-ID')} | Stok: ${p.stok || 0}</small>
       </div>
-      <button class="btn btn-primary" style="padding:8px 12px;" onclick="addToCart('${p.id}', '${p.nama}', ${p.harga || 0}, ${p.stok || 0})"><i class="fa-solid fa-cart-plus"></i></button>
+      <button class="btn btn-primary" style="padding:8px 12px;" onclick="addToCart('${p.id}', '${escapeHTML(p.nama).replace(/'/g, "\\'")}', ${p.harga || 0}, ${p.stok || 0})"><i class="fa-solid fa-cart-plus"></i></button>
     </div>
   `).join('');
 }
@@ -370,7 +347,7 @@ function renderCart() {
     total += c.harga * c.qty;
     return `
       <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0; align-items:center;">
-        <div>${c.nama}<br><small>Rp ${c.harga.toLocaleString('id-ID')}</small></div>
+        <div>${escapeHTML(c.nama)}<br><small>Rp ${c.harga.toLocaleString('id-ID')}</small></div>
         <div style="display:flex; align-items:center; gap:8px;">
           <input type="number" value="${c.qty}" min="1" max="${c.stokMaks}" onchange="updateQty(${idx}, this.value)" style="width:55px; padding:4px; text-align:center;">
           <button class="btn btn-danger" style="padding:4px 8px;" onclick="removeFromCart(${idx})"><i class="fa-solid fa-trash"></i></button>
@@ -442,9 +419,6 @@ async function prosesKasir() {
   kasirCart = []; renderCart(); loadKasirProducts(); loadOrders();
 }
 
-// ==========================================
-// 5. KATALOG PRODUK & LAYANAN
-// ==========================================
 async function loadProduk() {
   let { data } = await supabaseClient.from('products').select('*').order('nama');
   if (!data) { const res = await supabaseClient.from('produk').select('*').order('nama'); data = res.data; }
@@ -455,9 +429,9 @@ async function loadProduk() {
   
   list.innerHTML = data.map(p => `
     <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:16px; border-radius:12px; background:var(--bg-main);">
-      <span style="font-weight:600;">${p.nama} - Rp ${(p.harga || 0).toLocaleString('id-ID')} (Stok: ${p.stok || 0})</span>
+      <span style="font-weight:600;">${escapeHTML(p.nama)} - Rp ${(p.harga || 0).toLocaleString('id-ID')} (Stok: ${p.stok || 0})</span>
       <div style="display:flex; gap:8px;">
-        <button class="btn btn-outline" style="padding:6px 12px; font-size:0.85rem;" onclick="editProduk('${p.id}', '${p.nama}', ${p.harga || 0}, ${p.stok || 0})"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn btn-outline" style="padding:6px 12px; font-size:0.85rem;" onclick="editProduk('${p.id}', '${escapeHTML(p.nama).replace(/'/g, "\\'")}', ${p.harga || 0}, ${p.stok || 0})"><i class="fa-solid fa-pen"></i></button>
         <button class="btn btn-danger" style="padding:6px 12px; font-size:0.85rem;" onclick="hapusProduk('${p.id}')"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>
@@ -508,7 +482,7 @@ async function loadLayanan() {
   if (!data || data.length === 0) { list.innerHTML = `<p>Belum ada layanan.</p>`; return; }
   list.innerHTML = data.map(s => `
     <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:16px; border-radius:12px; background:var(--bg-main);">
-      <span style="font-weight:600;">${s.nama}</span>
+      <span style="font-weight:600;">${escapeHTML(s.nama)}</span>
       <button class="btn btn-danger" style="padding:6px 12px; font-size:0.85rem;" onclick="hapusLayanan('${s.id}')">Hapus</button>
     </div>
   `).join("");
@@ -522,9 +496,6 @@ document.getElementById("formLayanan")?.addEventListener("submit", async (e) => 
 
 async function hapusLayanan(id) { if(confirm("Hapus layanan ini?")) { await supabaseClient.from("services").delete().eq("id", id); loadLayanan(); } }
 
-// ==========================================
-// 6. CHAT & SETTINGS & NOTA
-// ==========================================
 async function loadUserList() {
   const { data } = await supabaseClient.from('chats').select('sender_id, profiles(nama)').eq('receiver_id', currentUser.id);
   const el = document.getElementById('userList');
@@ -533,7 +504,7 @@ async function loadUserList() {
   const uniqueUsers = [...new Map(data.map(item => [item.sender_id, item])).values()];
   el.innerHTML = uniqueUsers.map(u => `
     <div style="padding:16px; border-bottom:1px solid var(--border); cursor:pointer; font-weight:600;" onclick="loadAdminChat('${u.sender_id}')">
-      ${u.profiles?.nama || 'User'}
+      ${escapeHTML(u.profiles?.nama) || 'User'}
     </div>
   `).join('');
 }
@@ -545,7 +516,7 @@ async function loadAdminChat(userId) {
   
   const chatBox = document.getElementById('adminChatBox');
   if(!chatBox) return;
-  chatBox.innerHTML = data.map(c => `<div class="chat-msg ${c.sender_id === currentUser.id ? 'chat-me' : 'chat-them'}">${c.pesan}</div>`).join('');
+  chatBox.innerHTML = data.map(c => `<div class="chat-msg ${c.sender_id === currentUser.id ? 'chat-me' : 'chat-them'}">${escapeHTML(c.pesan)}</div>`).join('');
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
@@ -598,12 +569,12 @@ async function cetakNota(orderId) {
   let itemsHtml = '';
   if (items && items.length > 0) {
     itemsHtml = `<div class="line"></div><div class="desc"><strong>Rincian Barang:</strong></div>
-      ${items.map(i => `<div class="row"><span>${i.nama_produk} x${i.qty}</span><span>Rp ${(i.subtotal).toLocaleString('id-ID')}</span></div>`).join('')}`;
+      ${items.map(i => `<div class="row"><span>${escapeHTML(i.nama_produk)} x${i.qty}</span><span>Rp ${(i.subtotal).toLocaleString('id-ID')}</span></div>`).join('')}`;
   }
 
   const printWindow = window.open('', '_blank');
   printWindow.document.write(`
-    <html><head><title>Nota - ${order.nama}</title>
+    <html><head><title>Nota - ${escapeHTML(order.nama)}</title>
     <style>
       body { font-family: 'Courier New', monospace; padding: 20px; color: #000; background: #fff; }
       .nota { max-width: 400px; margin: 0 auto; border: 2px dashed #000; padding: 20px; }
@@ -621,12 +592,12 @@ async function cetakNota(orderId) {
         <div class="line"></div>
         <div class="row"><span>No. Nota</span><span>#${order.id.split('-')[0].toUpperCase()}</span></div>
         <div class="row"><span>Tanggal</span><span>${tgl}</span></div>
-        <div class="row"><span>Pelanggan</span><span>${order.nama}</span></div>
+        <div class="row"><span>Pelanggan</span><span>${escapeHTML(order.nama)}</span></div>
         <div class="line"></div>
-        <div class="desc"><strong>Layanan:</strong> ${order.layanan}</div>
-        ${order.catatan ? `<div class="desc"><strong>Keluhan:</strong> ${order.catatan}</div>` : ''}
-        ${order.kerusakan ? `<div class="desc"><strong>Diagnosa:</strong> ${order.kerusakan}</div>` : ''}
-        ${order.sparepart ? `<div class="desc"><strong>Sparepart:</strong> ${order.sparepart}</div>` : ''}
+        <div class="desc"><strong>Layanan:</strong> ${escapeHTML(order.layanan)}</div>
+        ${order.catatan ? `<div class="desc"><strong>Keluhan:</strong> ${escapeHTML(order.catatan)}</div>` : ''}
+        ${order.kerusakan ? `<div class="desc"><strong>Diagnosa:</strong> ${escapeHTML(order.kerusakan)}</div>` : ''}
+        ${order.sparepart ? `<div class="desc"><strong>Sparepart:</strong> ${escapeHTML(order.sparepart)}</div>` : ''}
         ${itemsHtml}
         <div class="line"></div>
         <div class="row total"><span>TOTAL</span><span>${biaya}</span></div>

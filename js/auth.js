@@ -57,14 +57,6 @@ document.getElementById("btnCheckEmail")?.addEventListener("click", async () => 
   const msg = document.getElementById("forgotMsg");
   if(!email) return msg.innerText = "Masukkan email.";
 
-  const { data, error } = await supabaseClient.from("profiles").select("security_question").eq("id", (await supabaseClient.from("profiles").select("id").limit(1)).data[0]?.id).single();
-  // *Catatan: Supabase Auth tidak mengizinkan kita mencari email di client. 
-  // Solusi: Kita gunakan Supabase RPC (Remote Procedure Call) untuk mencari profile by email.
-  // TAPI agar simpel, kita asumsikan user login dulu atau kita buat fungsi khusus.
-  // Untuk MVP ini, kita pakai trik: user memasukkan email, lalu sistem meminta mereka login manual jika gagal.
-  // (Fitur reset password via email link sudah otomatis di Supabase jika pakai signInWithOtp).
-  
-  // KARENA RLS, KITA GUNAKAN FUNGSI RPC:
   const { data: profile, error: err } = await supabaseClient.rpc('get_security_question', { user_email: email });
   
   if (err || !profile) {
@@ -79,4 +71,38 @@ document.getElementById("btnCheckEmail")?.addEventListener("click", async () => 
   document.getElementById("btnResetPass").classList.remove("hidden");
   document.getElementById("btnCheckEmail").classList.add("hidden");
   msg.innerText = "";
+});
+
+// FORGOT PASSWORD - Step 2: Simpan Password Baru
+document.getElementById("btnResetPass")?.addEventListener("click", async () => {
+  const email = document.getElementById("forgotEmail").value.trim();
+  const answer = document.getElementById("forgotAnswer").value.trim();
+  const newPass = document.getElementById("forgotNewPass").value;
+  const msg = document.getElementById("forgotMsg");
+  const btn = document.getElementById("btnResetPass");
+
+  if (!answer || !newPass) return msg.innerText = "Isi jawaban dan password baru.";
+  if (newPass.length < 6) return msg.innerText = "Password minimal 6 karakter.";
+
+  btn.textContent = "Menyimpan...";
+  btn.disabled = true;
+
+  // Panggil RPC untuk reset password (Pastikan kamu sudah membuat fungsi ini di Supabase)
+  const { data, error } = await supabaseClient.rpc('reset_password_with_security_question', { 
+    user_email: email, 
+    user_answer: answer, 
+    new_password: newPass 
+  });
+
+  btn.textContent = "Simpan Password Baru";
+  btn.disabled = false;
+
+  if (error || data === false) {
+    msg.style.color = "red";
+    msg.innerText = "Jawaban keamanan salah atau terjadi kesalahan.";
+  } else {
+    msg.style.color = "green";
+    msg.innerText = "✅ Password berhasil diubah! Silakan login.";
+    setTimeout(() => { window.location.href = "./login.html"; }, 2000);
+  }
 });
