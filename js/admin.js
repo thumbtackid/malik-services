@@ -1,6 +1,7 @@
 let currentUser, activeChatUser;
 let kasirCart = [];
 let revenueChartInstance = null;
+let dataLaporanGlobal = []; // Menyimpan data untuk di-export ke CSV
 
 (async () => {
   const session = await requireAdmin(); if (!session) return;
@@ -40,6 +41,7 @@ function showTab(tab) {
   if (tab === 'kasir') loadKasirProducts();
   if (tab === 'verifikasi') loadVerifikasiList();
   if (tab === 'notifikasi') loadNotifications();
+  if (tab === 'laporan') loadLaporan(); // <--- ROUTING BARU
 }
 
 async function loadOrders() {
@@ -613,4 +615,112 @@ async function cetakNota(orderId) {
       </div>
     </body></html>`);
   printWindow.document.close();
+}
+
+// ==========================================
+// 7. FITUR LAPORAN KEUANGAN & EXPORT CSV
+// ==========================================
+async function loadLaporan() {
+  const list = document.getElementById('laporanList');
+  const elOmzet = document.getElementById('lapOmzet');
+  const elLaba = document.getElementById('lapLaba');
+  const elBatal = document.getElementById('lapBatal');
+  
+  if (!list) return;
+  list.innerHTML = '<tr><td colspan="5" style="text-align: center;">Menghitung data...</td></tr>';
+
+  try {
+    const { data: orders, error } = await supabaseClient
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!orders || orders.length === 0) {
+      list.innerHTML = '<tr><td colspan="5" style="text-align: center;">Belum ada data transaksi.</td></tr>';
+      elOmzet.textContent = 'Rp 0';
+      elLaba.textContent = 'Rp 0';
+      elBatal.textContent = 'Rp 0';
+      return;
+    }
+
+    let totalOmzet = 0;
+    let totalBatal = 0;
+    const BIAYA_OPERASIONAL_PERSEN = 0.20; // 20% (Bisa Anda ubah manual di sini)
+
+    list.innerHTML = orders.map(o => {
+      const nominal = Number(o.total_amount || o.biaya || 0);
+      
+      if (o.payment_status === 'paid') {
+        totalOmzet += nominal;
+      } else if (o.status === 'cancel' || o.payment_status === 'rejected') {
+        totalBatal += nominal;
+      }
+
+      const statusKerja = o.status ? o.status.toUpperCase() : '-';
+      const statusBayar = o.payment_status ? o.payment_status.toUpperCase() : 'UNPAID';
+      const tgl = new Date(o.created_at).toLocaleDateString('id-ID');
+
+      return `
+        <tr>
+          <td>${tgl}</td>
+          <td>${escapeHTML(o.nama) || '-'}</td>
+          <td>${escapeHTML(o.layanan) || '-'}</td>
+          <td>
+            <span class="badge ${o.status === 'done' ? 'badge-done' : 'badge-pending'}">${statusKerja}</span>
+            <span class="badge ${o.payment_status === 'paid' ? 'badge-done' : 'badge-danger'}">${statusBayar}</span>
+          </td>
+          <td style="text-align: right; font-weight: 600;">${nominal.toLocaleString('id-ID')}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const biayaOperasional = totalOmzet * BIAYA_OPERASIONAL_PERSEN;
+    const labaBersih = totalOmzet - biayaOperasional;
+
+    const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+    
+    elOmzet.textContent = formatRp(totalOmzet);
+    elLaba.textContent = formatRp(labaBersih);
+    elBatal.textContent = formatRp(totalBatal);
+
+    dataLaporanGlobal = orders;
+
+  } catch (err) {
+    console.error("Error loadLaporan:", err);
+    list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Gagal memuat data laporan.</td></tr>';
+  }
+}
+
+function downloadCSV() {
+  if (dataLaporanGlobal.length === 0) {
+    return alert("Tidak ada data untuk di-download.");
+  }
+
+  try {
+    let csvContent = "Tanggal,Nama Pelanggan,Layanan,Status Kerja,Status Pembayaran,Nominal (Rp)\n";
+
+    dataLaporanGlobal.forEach(o => {
+      const nominal = Number(o.total_amount || o.biaya || 0);
+      const tgl = new Date(o.created_at).toLocaleDateString('id-ID');
+      
+      const nama = (o.nama || '-').replace(/,/g, '');
+      const layanan = (o.layanan || '-').replace(/,/g, '');
+
+      csvContent += `${tgl},${nama},${layanan},${o.status},${o.payment_status || 'unpaid'},${nominal}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Laporan_Keuangan_MalikService_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+  } catch (err) {
+    alert("Gagal mendownload CSV: " + err.message);
+  }
 }
