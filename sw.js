@@ -1,4 +1,4 @@
-const CACHE_NAME = "malik-service-v4"; // Naikkan versi jika ada update besar
+const CACHE_NAME = "malik-service-v14"; // Naikkan versi jika ada update besar
 
 const ASSETS_TO_CACHE = [
   "./",
@@ -14,9 +14,6 @@ const ASSETS_TO_CACHE = [
   "./manifest.json"
 ];
 
-// ==========================================
-// 1. INSTALL: Simpan aset dasar ke cache
-// ==========================================
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
@@ -33,9 +30,6 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// ==========================================
-// 2. ACTIVATE: Hapus cache versi lama
-// ==========================================
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -52,9 +46,6 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// ==========================================
-// 3. FETCH: Strategi Network-First untuk HTML/JS
-// ==========================================
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);

@@ -33,7 +33,9 @@
       <a href="#" onclick="showTab('produk')"><i class="fa-solid fa-box"></i> Katalog Produk</a>
       <a href="#" onclick="showTab('layanan')"><i class="fa-solid fa-tags"></i> Edit Layanan</a>
       <a href="#" onclick="showTab('chat')"><i class="fa-solid fa-comments"></i> Chat Masuk</a>
-      <a href="#" onclick="showTab('laporan')"><i class="fa-solid fa-chart-line"></i> Laporan Keuangan</a> <!-- MENU BARU -->
+      <a href="#" onclick="showTab('laporan')"><i class="fa-solid fa-chart-line"></i> Laporan Keuangan</a>
+      <a href="#" onclick="showTab('artikel')"><i class="fa-solid fa-newspaper"></i> Kelola Artikel</a>
+      <a href="#" onclick="showTab('iklan')"><i class="fa-solid fa-bullhorn"></i> Kelola Iklan</a>
       <a href="#" onclick="showTab('setting')"><i class="fa-solid fa-gear"></i> Pengaturan</a>
     </nav>
     <div style="padding-top:20px; border-top:1px solid var(--border);">
@@ -61,7 +63,7 @@
         </div>
         <div class="table-wrap">
           <table class="table">
-            <thead><tr><th>Pelanggan & Keluhan</th><th>Layanan</th><th>Status Kerja</th><th>Pembayaran</th><th>Biaya (Rp)</th><th>Aksi</th></tr></thead>
+            <thead><tr><th>Pelanggan & Keluhan</th><th>Layanan</th><th>Status Kerja</th><th>Pembayaran</th><th>Biaya (Rp)</th><th>No. Resi (Opsional)</th><th>Aksi</th></tr></thead>
             <tbody id="ordersList"></tbody>
           </table>
         </div>
@@ -76,9 +78,12 @@
 
     <!-- NOTIFIKASI -->
     <div id="tab-notifikasi" class="card hidden">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
         <h2><i class="fa-solid fa-bell"></i> Notifikasi</h2>
-        <button class="btn btn-outline" onclick="markAllRead()">Tandai Semua Dibaca</button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-outline" onclick="markAllRead()" style="padding:10px 16px; font-size:0.85rem;">Tandai Semua Dibaca</button>
+          <button class="btn btn-danger" onclick="hapusSemuaNotif()" style="padding:10px 16px; font-size:0.85rem;"><i class="fa-solid fa-trash"></i> Hapus Semua</button>
+        </div>
       </div>
       <div id="notifList"></div>
     </div>
@@ -108,11 +113,12 @@
     <!-- PRODUK -->
     <div id="tab-produk" class="card hidden">
       <h2 style="margin-bottom:24px;">Katalog Produk</h2>
-      <form id="formProduk" style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
-        <input type="text" id="newProdukNama" placeholder="Nama Barang" required style="flex:1; padding:14px; border-radius:12px; border:1px solid var(--border);">
-        <input type="number" id="newProdukHarga" placeholder="Harga" required style="width:150px; padding:14px; border-radius:12px; border:1px solid var(--border);">
-        <input type="number" id="newProdukStok" placeholder="Stok" required style="width:100px; padding:14px; border-radius:12px; border:1px solid var(--border);">
-        <button type="submit" class="btn btn-primary">Tambah Produk</button>
+      <form id="formProduk" style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
+        <input type="text" id="newProdukNama" placeholder="Nama Barang" required style="flex:1; padding:14px; border-radius:12px; border:1px solid var(--border); min-width:150px;">
+        <input type="number" id="newProdukHarga" placeholder="Harga" required style="width:130px; padding:14px; border-radius:12px; border:1px solid var(--border);">
+        <input type="number" id="newProdukStok" placeholder="Stok" required style="width:90px; padding:14px; border-radius:12px; border:1px solid var(--border);">
+        <input type="file" id="newProdukGambar" accept="image/*" style="flex:1; padding:10px; border-radius:12px; border:1px solid var(--border); min-width:200px; background:white;">
+        <button type="submit" class="btn btn-primary" id="btnTambahProduk">Tambah Produk</button>
       </form>
       <div id="produkList" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
@@ -142,11 +148,14 @@
       </div>
     </div>
 
-    <!-- LAPORAN KEUANGAN (BARU) -->
+    <!-- LAPORAN KEUANGAN -->
     <div id="tab-laporan" class="card hidden">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
         <h2><i class="fa-solid fa-chart-line"></i> Laporan Keuangan</h2>
-        <button class="btn btn-primary" onclick="downloadCSV()"><i class="fa-solid fa-download"></i> Download Laporan (CSV)</button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-danger" onclick="hapusDataDemo()"><i class="fa-solid fa-broom"></i> Bersihkan Data Demo</button>
+          <button class="btn btn-primary" onclick="downloadCSV()"><i class="fa-solid fa-download"></i> Download CSV</button>
+        </div>
       </div>
 
       <div class="stats-grid">
@@ -179,11 +188,33 @@
               <th style="text-align: right;">Nominal (Rp)</th>
             </tr>
           </thead>
-          <tbody id="laporanList">
-            <tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>
-          </tbody>
+          <tbody id="laporanList"></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- KELOLA ARTIKEL -->
+    <div id="tab-artikel" class="card hidden">
+      <h2 style="margin-bottom:24px;">Kelola Artikel</h2>
+      <form id="formArtikel" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:24px;">
+        <input type="text" id="artTitle" placeholder="Judul Artikel" required style="padding:14px; border-radius:12px; border:1px solid var(--border);">
+        <textarea id="artContent" placeholder="Isi Artikel..." required rows="5" style="padding:14px; border-radius:12px; border:1px solid var(--border);"></textarea>
+        <input type="file" id="artImage" accept="image/*" style="padding:10px; border-radius:12px; border:1px solid var(--border);">
+        <button type="submit" class="btn btn-primary" id="btnTambahArtikel">Publish Artikel</button>
+      </form>
+      <div id="artikelListAdmin" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </div>
+
+    <!-- KELOLA IKLAN -->
+    <div id="tab-iklan" class="card hidden">
+      <h2 style="margin-bottom:24px;">Kelola Iklan (Banner)</h2>
+      <form id="formIklan" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:24px;">
+        <input type="text" id="adsTitle" placeholder="Nama Pengiklan (Internal)" required style="padding:14px; border-radius:12px; border:1px solid var(--border);">
+        <input type="text" id="adsLink" placeholder="Link Tujuan (https://...)" required style="padding:14px; border-radius:12px; border:1px solid var(--border);">
+        <input type="file" id="adsImage" accept="image/*" required style="padding:10px; border-radius:12px; border:1px solid var(--border);">
+        <button type="submit" class="btn btn-primary" id="btnTambahIklan">Tambah Banner Iklan</button>
+      </form>
+      <div id="iklanListAdmin" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
     <!-- SETTING -->
@@ -196,14 +227,21 @@
             <input type="text" id="logoUrl">
             <button class="btn btn-primary" id="btnSaveLogo" style="margin-top:16px;">Simpan Logo</button>
           </div>
+          <div class="field" style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 24px;">
+            <label>Alamat Lengkap Toko</label>
+            <input type="text" id="alamatToko" placeholder="Jl. Contoh No. 123, Semarang">
+            <label style="margin-top:12px;">URL Embed Google Maps</label>
+            <input type="text" id="mapsUrl" placeholder="https://www.google.com/maps/embed?...">
+            <button class="btn btn-primary" id="btnSaveAlamat" style="margin-top:16px;">Simpan Alamat & Maps</button>
+          </div>
         </div>
         <div>
           <div class="field">
-            <label>URL Gambar QRIS (Upload ke imgur/supabase storage lalu paste linknya)</label>
+            <label>URL Gambar QRIS</label>
             <input type="text" id="qrisUrl">
           </div>
           <div class="field">
-            <label>Info Bank / Rekening (Tampil di bawah QRIS)</label>
+            <label>Info Bank / Rekening</label>
             <input type="text" id="bankInfo" placeholder="Contoh: BCA 123456789 a/n Malik">
           </div>
           <div class="field">
@@ -223,9 +261,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('SW Registered', reg))
-        .catch(err => console.log('SW Error', err));
+      navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW Registered', reg)).catch(err => console.log('SW Error', err));
     });
   }
 </script>

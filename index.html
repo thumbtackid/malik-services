@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#101828">
   <title>Malik Service | Solusi Servis Elektronik</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7329937149040108"
+     crossorigin="anonymous"></script>
+
   <link rel="manifest" href="./manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,17 +50,8 @@
     .slider{position:relative;overflow:hidden;min-height:440px;border-radius:28px;background:#171b3b;box-shadow:var(--shadow)}
     .slides{display:flex;min-height:440px;transition:transform .65s cubic-bezier(.22,.75,.25,1)}
     .slide{min-width:100%;position:relative;overflow:hidden;display:grid;grid-template-columns:1.08fr .92fr;align-items:center;padding:58px 7%;color:white;background:linear-gradient(120deg,#171b3b,#33318a)}
-    .slide:nth-child(2) {
-    background:
-        linear-gradient(90deg, rgba(16,44,58,.55), rgba(8,126,131,.15)),
-        url('./assets/slides/banner-2.jpeg') center/cover no-repeat;
-}
-
-.slide:nth-child(3) {
-    background:
-        linear-gradient(90deg, rgba(51,32,79,.55), rgba(139,61,121,.15)),
-        url('./assets/slides/banner-3.jpeg') center/cover no-repeat;
-}
+    .slide:nth-child(2) { background: linear-gradient(90deg, rgba(16,44,58,.55), rgba(8,126,131,.15)), url('./assets/slides/banner-2.jpeg') center/cover no-repeat; }
+    .slide:nth-child(3) { background: linear-gradient(90deg, rgba(51,32,79,.55), rgba(139,61,121,.15)), url('./assets/slides/banner-3.jpeg') center/cover no-repeat; }
     .slide:before{content:"";position:absolute;width:440px;height:440px;border:1px solid #ffffff18;border-radius:50%;right:7%;top:-170px;box-shadow:0 0 0 45px #ffffff08,0 0 0 90px #ffffff05}
     .slide-copy{position:relative;z-index:2;max-width:590px}
     .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid #ffffff35;border-radius:30px;background:#ffffff12;color:#e0e7ff;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:22px}
@@ -136,6 +131,57 @@
       .footer-grid>div:first-child{grid-column:1/-1}.footer-bottom{flex-direction:column}
     }
     @media(max-width:380px){.service-grid{grid-template-columns:1fr}.nav-actions .btn{font-size:10px}}
+    
+    /* ====== BANNER IKLAN ====== */
+    .banner-wrapper {
+      width: 100%;
+      height: 250px;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      background: #f8fafc;
+      position: relative;
+    }
+    .banner-wrapper img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ====== MODAL ARTIKEL ====== */
+    .modal-artikel-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7); z-index: 2000;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; backdrop-filter: blur(5px);
+    }
+    .modal-artikel-box {
+      background: white; border-radius: 20px; width: 100%; max-width: 700px;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      animation: slideUp 0.4s ease;
+    }
+    .modal-artikel-head {
+      position: sticky; top: 0; background: white; z-index: 1;
+      padding: 20px; border-bottom: 1px solid var(--line);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-artikel-head h2 { font-size: 1.2rem; margin: 0; }
+    .modal-artikel-close {
+      background: none; border: none; font-size: 1.8rem; cursor: pointer;
+      color: var(--muted); line-height: 1; transition: 0.2s;
+    }
+    .modal-artikel-close:hover { color: var(--danger); transform: rotate(90deg); }
+    .modal-artikel-body { padding: 24px; }
+    .modal-artikel-body img {
+      width: 100%; max-height: 350px; object-fit: cover;
+      border-radius: 12px; margin-bottom: 20px;
+    }
+    .modal-artikel-body p {
+      font-size: 1rem; color: var(--ink); line-height: 1.8;
+      white-space: pre-line; 
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -152,7 +198,7 @@
         <span>Malik Service<small>REPAIR • CARE • SOLUTIONS</small></span>
       </a>
       <div class="nav-links" id="navLinks">
-        <a href="#beranda">Beranda</a><a href="#layanan">Layanan</a><a href="#tentang">Tentang Kami</a><a href="#kontak">Kontak</a>
+        <a href="#beranda">Beranda</a><a href="#layanan">Layanan</a><a href="#artikel">Artikel</a><a href="#tentang">Tentang Kami</a><a href="#kontak">Kontak</a>
       </div>
       <div class="nav-actions">
         <a href="./login.html" class="btn btn-light" id="btnLoginNav">Masuk</a>
@@ -168,7 +214,6 @@
       <div class="container">
         <div class="slider" aria-label="Banner promosi Malik Service">
           <div class="slides" id="slides">
-            <!-- SLIDE 1: Bisa diganti menjadi iklan/promo -->
             <article class="slide">
               <div class="slide-copy">
                 <span class="eyebrow"><i class="fa-solid fa-bolt"></i> MALIK SERVICE • SEMARANG</span>
@@ -178,7 +223,6 @@
               </div>
               <div class="slide-art"><div class="art-circle"><i class="fa-solid fa-screwdriver-wrench"></i></div><span class="art-tag"><i class="fa-solid fa-circle-check" style="color:#12a579"></i> Solusi lebih praktis</span></div>
             </article>
-            <!-- SLIDE 2: Bisa diganti menjadi produk unggulan -->
             <article class="slide">
               <div class="slide-copy">
                 <span class="eyebrow"><i class="fa-solid fa-tags"></i> PRODUK & KOMPONEN</span>
@@ -188,7 +232,6 @@
               </div>
               <div class="slide-art"><div class="art-circle"><i class="fa-solid fa-microchip"></i></div><span class="art-tag">Komponen & sparepart</span></div>
             </article>
-            <!-- SLIDE 3: Bisa diganti menjadi testimoni pelanggan -->
             <article class="slide">
               <div class="slide-copy">
                 <span class="eyebrow"><i class="fa-solid fa-star"></i> PENGALAMAN PELANGGAN</span>
@@ -204,6 +247,16 @@
             <div class="slider-arrows"><button id="prevSlide" aria-label="Slide sebelumnya"><i class="fa-solid fa-chevron-left"></i></button><button id="nextSlide" aria-label="Slide berikutnya"><i class="fa-solid fa-chevron-right"></i></button></div>
           </div>
         </div>
+        
+        <!-- BANNER IKLAN -->
+        <div id="bannerIklanContainer" class="hidden" style="margin-top: 20px;">
+          <a href="#" id="bannerIklanLink" target="_blank">
+            <div class="banner-wrapper">
+              <img id="bannerIklanImg" src="" alt="Iklan">
+            </div>
+          </a>
+        </div>
+
         <div class="quick-info">
           <div class="quick-item"><span class="quick-icon"><i class="fa-solid fa-mobile-screen-button"></i></span><div><strong>Beragam Perangkat</strong><span>HP hingga elektronik rumah tangga</span></div></div>
           <div class="quick-item"><span class="quick-icon"><i class="fa-solid fa-comments"></i></span><div><strong>Konsultasi Mudah</strong><span>Jelaskan keluhan sebelum servis</span></div></div>
@@ -224,6 +277,18 @@
       </div>
     </section>
 
+    <!-- SECTION ARTIKEL DINAMIS -->
+    <section class="section section-soft" id="artikel" style="background: #fff; border-top: 1px solid var(--line);">
+      <div class="container">
+        <div class="section-head"><div class="kicker">Info & Tips</div><h2>Artikel Terbaru</h2><p>Pelajari tips perawatan perangkat elektronik dari ahlinya.</p></div>
+        <div class="service-grid" id="artikelTerbaruList">
+          <!-- Artikel dimuat via JS -->
+          <p style="text-align:center; width:100%; grid-column: 1 / -1; color: var(--muted);">Memuat artikel...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- KONTEN TENTANG KAMI (SUDAH DIMASUKKAN) -->
     <section class="section section-soft" id="tentang">
       <div class="container about-grid">
         <div class="about-visual"><i class="fa-solid fa-gears"></i></div>
@@ -241,6 +306,7 @@
       </div>
     </section>
 
+    <!-- KONTEN KONTAK (SUDAH DIMASUKKAN) -->
     <section class="section" id="kontak">
       <div class="container">
         <div class="contact-panel">
@@ -251,11 +317,26 @@
     </section>
   </main>
 
+  <!-- MODAL ARTIKEL (Tersembunyi by default) -->
+  <div id="modalArtikel" class="modal-artikel-overlay hidden" onclick="tutupArtikel(event)">
+    <div class="modal-artikel-box" onclick="event.stopPropagation()">
+      <div class="modal-artikel-head">
+        <h2 id="artikelJudul">Judul</h2>
+        <button class="modal-artikel-close" onclick="tutupArtikel(event)">&times;</button>
+      </div>
+      <div class="modal-artikel-body">
+        <img id="artikelGambar" src="" alt="Gambar Artikel">
+        <p id="artikelIsi">Isi...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER (SUDAH DIMASUKKAN) -->
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
         <div><a href="./index.html" class="brand" style="color:white"><span class="brand-mark"><i class="fa-solid fa-screwdriver-wrench"></i></span><span>Malik Service<small style="color:#98a2b3">REPAIR • CARE • SOLUTIONS</small></span></a><p style="margin-top:16px;max-width:330px;line-height:1.9">Layanan konsultasi dan perbaikan berbagai perangkat elektronik di Semarang dan sekitarnya.</p></div>
-        <div><h4>Navigasi</h4><div class="footer-links"><a href="#beranda">Beranda</a><a href="#layanan">Layanan</a><a href="#tentang">Tentang Kami</a><a href="#kontak">Kontak</a></div></div>
+        <div><h4>Navigasi</h4><div class="footer-links"><a href="#beranda">Beranda</a><a href="#layanan">Layanan</a><a href="#artikel">Artikel</a><a href="#tentang">Tentang Kami</a><a href="#kontak">Kontak</a></div></div>
         <div><h4>Hubungi Kami</h4><div class="footer-links"><a href="https://wa.me/6285713087659"><i class="fa-brands fa-whatsapp"></i> 0857-1308-7659</a><a href="mailto:thumbtackid@gmail.com"><i class="fa-regular fa-envelope"></i> thumbtackid@gmail.com</a><span>Semarang, Jawa Tengah</span></div></div>
       </div>
       <div class="footer-bottom"><span>© 2026 Malik Service. Hak cipta dilindungi.</span><span>Dibuat untuk memudahkan layanan servis Anda.</span></div>
@@ -263,7 +344,7 @@
   </footer>
 
   <script>
-    // Slider banner: atur konten pada tiga elemen .slide di atas.
+    // Slider banner
     (() => {
       const track = document.getElementById('slides');
       const dots = [...document.querySelectorAll('#sliderDots button')];
@@ -295,7 +376,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./js/supabase.js"></script>
+  
   <script>
+    // === LOGIKA SESSION ===
     (async () => {
       const session = await getSession();
       const btnLogin = document.getElementById("btnLoginNav");
@@ -307,6 +390,82 @@
         btnDash.classList.remove("hidden");
         btnOut.classList.remove("hidden");
         btnOut.addEventListener("click", logout);
+      }
+    })();
+
+    // === FUNGSI BUKA/TUTUP MODAL ARTIKEL ===
+    function bukaArtikel(id, judul, isi, gambar) {
+      document.getElementById('artikelJudul').textContent = judul;
+      document.getElementById('artikelIsi').textContent = isi; 
+      const imgEl = document.getElementById('artikelGambar');
+      if (gambar) {
+        imgEl.src = gambar;
+        imgEl.classList.remove('hidden');
+      } else {
+        imgEl.classList.add('hidden');
+      }
+      document.getElementById('modalArtikel').classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; 
+    }
+
+    function tutupArtikel(e) {
+      if(e) e.preventDefault();
+      document.getElementById('modalArtikel').classList.add('hidden');
+      document.body.style.overflow = ''; 
+    }
+
+    // === SCRIPT UNTUK MENAMPILKAN IKLAN & ARTIKEL ===
+    (async () => {
+      try {
+        // 1. Ambil Iklan
+        const { data: ads } = await supabaseClient.from('ads').select('*').eq('is_active', true).limit(1).maybeSingle();
+        if (ads && ads.image_url) {
+          document.getElementById('bannerIklanContainer').classList.remove('hidden');
+          const img = document.getElementById('bannerIklanImg');
+          img.src = ads.image_url;
+          document.getElementById('bannerIklanLink').href = ads.link_url;
+
+          let posY = 0, arah = 1, animasiBerjalan = true;
+          img.addEventListener('mouseenter', () => animasiBerjalan = false);
+          img.addEventListener('mouseleave', () => animasiBerjalan = true);
+          setInterval(() => {
+            if (!animasiBerjalan) return;
+            const maxScroll = img.naturalHeight - 250; 
+            if (maxScroll > 0) {
+              posY += (1 * arah);
+              if (posY >= maxScroll || posY <= 0) arah *= -1;
+              img.style.transform = `translateY(-${posY}px)`;
+            }
+          }, 30);
+        }
+
+        // 2. Ambil Artikel Terbaru
+        const { data: articles } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false }).limit(4);
+        const list = document.getElementById('artikelTerbaruList');
+        
+        if (articles && articles.length > 0) {
+          list.innerHTML = articles.map(a => {
+            const safeTitle = a.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const safeContent = a.content.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
+            const safeImage = (a.image_url || '').replace(/'/g, "\\'");
+            
+            return `
+              <article class="service-card" style="padding: 0; overflow: hidden; cursor: pointer; height: 100%;" 
+                onclick="bukaArtikel('${a.id}', '${safeTitle}', '${safeContent}', '${safeImage}')">
+                <img src="${a.image_url || 'https://via.placeholder.com/300x150'}" style="width: 100%; height: 180px; object-fit: cover;">
+                <div style="padding: 20px;">
+                  <small style="color: var(--brand); font-weight: 700; font-size: 10px; text-transform: uppercase;">Tips Elektronik</small>
+                  <h3 style="font-size: 1rem; margin: 8px 0; line-height: 1.4;">${a.title}</h3>
+                  <p style="font-size: 0.85rem; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${a.content}</p>
+                </div>
+              </article>
+            `;
+          }).join('');
+        } else {
+          list.innerHTML = '<p style="text-align:center; grid-column: 1 / -1; color:var(--muted);">Belum ada artikel yang dipublikasikan.</p>';
+        }
+      } catch (err) {
+        console.log("Info: Gagal memuat data dinamis di halaman depan.", err);
       }
     })();
   </script>

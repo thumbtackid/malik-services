@@ -1,7 +1,7 @@
 let currentUser, activeChatUser;
 let kasirCart = [];
 let revenueChartInstance = null;
-let dataLaporanGlobal = []; // Menyimpan data untuk di-export ke CSV
+let dataLaporanGlobal = []; 
 
 (async () => {
   const session = await requireAdmin(); if (!session) return;
@@ -13,6 +13,8 @@ let dataLaporanGlobal = []; // Menyimpan data untuk di-export ke CSV
     if (document.getElementById('qrisUrl')) document.getElementById('qrisUrl').value = set.qris_image_url || '';
     if (document.getElementById('bankInfo')) document.getElementById('bankInfo').value = set.bank_info || '';
     if (document.getElementById('adminWa')) document.getElementById('adminWa').value = set.admin_wa_number || '';
+    if (document.getElementById('alamatToko')) document.getElementById('alamatToko').value = set.alamat_toko || '';
+    if (document.getElementById('mapsUrl')) document.getElementById('mapsUrl').value = set.maps_url || '';
   }
 
   loadOrders(); 
@@ -41,7 +43,9 @@ function showTab(tab) {
   if (tab === 'kasir') loadKasirProducts();
   if (tab === 'verifikasi') loadVerifikasiList();
   if (tab === 'notifikasi') loadNotifications();
-  if (tab === 'laporan') loadLaporan(); // <--- ROUTING BARU
+  if (tab === 'laporan') loadLaporan(); 
+  if (tab === 'artikel') loadArtikelAdmin();
+  if (tab === 'iklan') loadIklanAdmin();
 }
 
 async function loadOrders() {
@@ -109,7 +113,7 @@ async function loadOrders() {
   if (!ordersList) return;
   
   if (filteredData.length === 0) {
-    ordersList.innerHTML = `<tr><td colspan="6" style="text-align:center;">Pesanan tidak ditemukan.</td></tr>`;
+    ordersList.innerHTML = `<tr><td colspan="7" style="text-align:center;">Pesanan tidak ditemukan.</td></tr>`;
     return;
   }
 
@@ -129,9 +133,7 @@ async function loadOrders() {
         <td>
           <strong>${escapeHTML(o.nama) || '-'}</strong><br>
           <small style="color:var(--text-muted);">${escapeHTML(o.telepon) || '-'}</small><br>
-          <small style="color:var(--primary); font-weight:600;">Keluhan: ${escapeHTML(o.catatan) || '-'}</small><br>
-          <small style="color:var(--text-main);">Diagnosa: ${escapeHTML(o.kerusakan) || '-'}</small><br>
-          <small style="color:var(--text-main);">Part: ${escapeHTML(o.sparepart) || '-'}</small>
+          <small style="color:var(--primary); font-weight:600;">Catatan: ${escapeHTML(o.catatan) || '-'}</small><br>
           ${itemsHtml}
         </td>
         <td>${escapeHTML(o.layanan) || '-'}</td>
@@ -148,15 +150,32 @@ async function loadOrders() {
           <input type="number" value="${o.total_amount || o.biaya || 0}" onchange="updateBiaya('${o.id}', this.value)" style="width:100px; padding:8px; border-radius:8px; border:1px solid var(--border);" placeholder="0">
         </td>
         <td>
+          <input type="text" value="${o.no_resi || ''}" onchange="updateResi('${o.id}', this.value)" style="width:120px; padding:8px; border-radius:8px; border:1px solid var(--border);" placeholder="Input Resi...">
+        </td>
+        <td>
           <div style="display:flex; flex-direction:column; gap:4px;">
-            <button class="btn btn-outline" style="padding:6px; font-size:0.75rem;" onclick="editDiagnosa('${o.id}')"><i class="fa-solid fa-stethoscope"></i> Diagnosa</button>
-            <button class="btn btn-outline" style="padding:6px; font-size:0.75rem;" onclick="cetakNota('${o.id}')"><i class="fa-solid fa-print"></i> Nota</button>
+            <button class="btn btn-outline" style="padding:6px; font-size:0.75rem;" onclick="cetakNota('${o.id}')"><i class="fa-solid fa-print"></i></button>
             <button class="btn btn-danger" style="padding:6px; font-size:0.75rem;" onclick="hapusPesanan('${o.id}')"><i class="fa-solid fa-trash"></i></button>
           </div>
         </td>
       </tr>
     `;
   }).join("");
+}
+
+async function updateResi(id, resi) {
+  await supabaseClient.from("orders").update({ no_resi: resi }).eq("id", id);
+  loadOrders();
+}
+
+async function hapusDataDemo() {
+  if (!confirm("Hapus SEMUA pesanan berstatus 'cancel' dan pesanan Demo? Laporan keuangan Anda yang asli (Lunas) tidak akan tersentuh.")) return;
+  try {
+    const { error } = await supabaseClient.from('orders').delete().or('status.eq.cancel,catatan.ilike.%Demo%');
+    if (error) throw error;
+    alert("Data demo dan pesanan batal berhasil dibersihkan!");
+    loadOrders(); loadLaporan();
+  } catch (err) { alert("Gagal menghapus data: " + err.message); }
 }
 
 async function loadVerifikasiList() {
@@ -200,18 +219,11 @@ async function verifikasiPembayaran(orderId, isAccept) {
   const { error } = await supabaseClient.from('orders').update(updateData).eq('id', orderId);
   if (error) return alert("Gagal update: " + error.message);
 
-  const { data: order, error: orderErr } = await supabaseClient
-    .from('orders')
-    .select('*')
-    .eq('id', orderId)
-    .single();
+  const { data: order, error: orderErr } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
 
   if (orderErr || !order) {
-    console.error("Gagal mengambil data order:", orderErr);
     alert("Pembayaran berhasil diupdate, tapi gagal mengambil detail user.");
-    loadVerifikasiList();
-    loadOrders();
-    return;
+    loadVerifikasiList(); loadOrders(); return;
   }
   
   if (isAccept && order.payment_proof_url) {
@@ -220,23 +232,15 @@ async function verifikasiPembayaran(orderId, isAccept) {
       if (urlParts.length >= 2) {
         const filePath = urlParts[1];
         const { error: deleteErr } = await supabaseClient.storage.from('payment-proofs').remove([filePath]);
-        
         if (!deleteErr) {
           await supabaseClient.from('orders').update({ payment_proof_url: null }).eq('id', orderId);
-          console.log("✅ Gambar bukti berhasil dihapus otomatis.");
-        } else {
-          console.error("Gagal hapus gambar:", deleteErr);
         }
       }
-    } catch (e) {
-      console.error("Error saat auto-delete gambar:", e);
-    }
+    } catch (e) { console.error("Error auto-delete gambar:", e); }
   }
 
   if (order.user_id) {
-    const msg = isAccept 
-      ? "✅ Pembayaran Anda telah diverifikasi. Pesanan sedang diproses."
-      : "❌ Bukti pembayaran ditolak. Silakan upload ulang bukti yang benar.";
+    const msg = isAccept ? "✅ Pembayaran Anda telah diverifikasi. Pesanan sedang diproses." : "❌ Bukti pembayaran ditolak. Silakan upload ulang.";
     await supabaseClient.from('chats').insert({ sender_id: currentUser.id, receiver_id: order.user_id, pesan: msg });
   }
 
@@ -249,20 +253,15 @@ async function verifikasiPembayaran(orderId, isAccept) {
   }
 
   alert(isAccept ? "Pembayaran Diterima & Gambar Bukti Dihapus!" : "Pembayaran Ditolak!");
-  loadVerifikasiList();
-  loadOrders();
+  loadVerifikasiList(); loadOrders();
 }
 
 async function kirimWA(target, message) {
   try {
-    const { data, error } = await supabaseClient.functions.invoke('send-wa', {
-      body: { target, message }
-    });
+    const { data, error } = await supabaseClient.functions.invoke('send-wa', { body: { target, message } });
     if (error) throw error;
     console.log('WA Terkirim:', data);
-  } catch (e) {
-    console.error("Gagal kirim WA via Edge Function:", e.message);
-  }
+  } catch (e) { console.error("Gagal kirim WA:", e.message); }
 }
 
 async function loadNotifications() {
@@ -301,12 +300,20 @@ async function markAllRead() {
   loadNotifications();
 }
 
+async function hapusSemuaNotif() {
+  if (!confirm("Hapus SEMUA notifikasi dari daftar?")) return;
+  try {
+    await supabaseClient.from('notifications').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    alert("Semua notifikasi berhasil dihapus!"); loadNotifications();
+  } catch (err) { alert("Gagal menghapus notifikasi: " + err.message); }
+}
+
+// ==========================================
+// KASIR & PRODUK
+// ==========================================
 async function loadKasirProducts() {
-  let { data, error } = await supabaseClient.from('products').select('*').order('nama');
-  if (error || !data || data.length === 0) {
-    const res = await supabaseClient.from('produk').select('*').order('nama');
-    data = res.data;
-  }
+  let { data } = await supabaseClient.from('products').select('*').order('nama');
+  if (!data) { const res = await supabaseClient.from('produk').select('*').order('nama'); data = res.data; }
 
   const list = document.getElementById('kasirProductList');
   if (!list) return;
@@ -314,9 +321,12 @@ async function loadKasirProducts() {
   
   list.innerHTML = data.map(p => `
     <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:12px; border-radius:8px; background:white;">
-      <div>
-        <strong>${escapeHTML(p.nama)}</strong><br>
-        <small>Rp ${(p.harga || 0).toLocaleString('id-ID')} | Stok: ${p.stok || 0}</small>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <img src="${p.image_url || 'https://via.placeholder.com/40?text=-'}" style="width:40px; height:40px; object-fit:cover; border-radius:6px;">
+        <div>
+          <strong>${escapeHTML(p.nama)}</strong><br>
+          <small>Rp ${(p.harga || 0).toLocaleString('id-ID')} | Stok: ${p.stok || 0}</small>
+        </div>
       </div>
       <button class="btn btn-primary" style="padding:8px 12px;" onclick="addToCart('${p.id}', '${escapeHTML(p.nama).replace(/'/g, "\\'")}', ${p.harga || 0}, ${p.stok || 0})"><i class="fa-solid fa-cart-plus"></i></button>
     </div>
@@ -329,9 +339,7 @@ function addToCart(id, nama, harga, stokMaks) {
   if (existing) {
     if (existing.qty + 1 > stokMaks) return alert(`Jumlah melebihi stok (Maks: ${stokMaks})!`);
     existing.qty++;
-  } else {
-    kasirCart.push({ id, nama, harga, qty: 1, stokMaks });
-  }
+  } else { kasirCart.push({ id, nama, harga, qty: 1, stokMaks }); }
   renderCart();
 }
 
@@ -340,10 +348,8 @@ function renderCart() {
   if (!cartDiv) return;
   if (kasirCart.length === 0) {
     cartDiv.innerHTML = '<p style="color:var(--text-muted);">Keranjang kosong</p>';
-    document.getElementById('kasirTotal').innerText = 'Rp 0';
-    return;
+    document.getElementById('kasirTotal').innerText = 'Rp 0'; return;
   }
-  
   let total = 0;
   cartDiv.innerHTML = kasirCart.map((c, idx) => {
     total += c.harga * c.qty;
@@ -377,44 +383,25 @@ async function prosesKasir() {
   if (namaPembeli === null) return;
 
   const total = kasirCart.reduce((sum, c) => sum + (c.harga * c.qty), 0);
-  
   const { data: order, error: orderError } = await supabaseClient.from('orders').insert({
     nama: namaPembeli.trim() || 'Pelanggan Kasir',
     layanan: 'Pembelian Sparepart',
-    status: 'done',
-    biaya: total,
-    total_amount: total,
-    payment_status: 'paid',
-    payment_method: 'cash',
-    catatan: 'Transaksi langsung di toko',
-    paid_at: new Date().toISOString()
+    status: 'done', biaya: total, total_amount: total,
+    payment_status: 'paid', payment_method: 'cash',
+    catatan: 'Transaksi langsung di toko', paid_at: new Date().toISOString()
   }).select().single();
 
   if (orderError) return alert("Gagal membuat pesanan: " + orderError.message);
 
-  const items = kasirCart.map(c => ({
-    order_id: order.id, product_id: c.id, nama_produk: c.nama, qty: c.qty, harga_satuan: c.harga, subtotal: c.harga * c.qty
-  }));
-
+  const items = kasirCart.map(c => ({ order_id: order.id, product_id: c.id, nama_produk: c.nama, qty: c.qty, harga_satuan: c.harga, subtotal: c.harga * c.qty }));
   const { error: itemError } = await supabaseClient.from('order_items').insert(items);
-  if (itemError) {
-    await supabaseClient.from('orders').delete().eq('id', order.id);
-    return alert("Gagal menyimpan rincian: " + itemError.message);
-  }
+  if (itemError) { await supabaseClient.from('orders').delete().eq('id', order.id); return alert("Gagal simpan rincian: " + itemError.message); }
 
   for (let item of kasirCart) {
     let tableName = 'products';
     let { data: prod } = await supabaseClient.from(tableName).select('stok').eq('id', item.id).single();
-    if (!prod) {
-      tableName = 'produk';
-      const res = await supabaseClient.from(tableName).select('stok').eq('id', item.id).single();
-      prod = res.data;
-    }
-    if (prod) {
-      let stokBaru = prod.stok - item.qty;
-      if (stokBaru < 0) stokBaru = 0;
-      await supabaseClient.from(tableName).update({ stok: stokBaru }).eq('id', item.id);
-    }
+    if (!prod) { tableName = 'produk'; const res = await supabaseClient.from(tableName).select('stok').eq('id', item.id).single(); prod = res.data; }
+    if (prod) { let stokBaru = prod.stok - item.qty; if (stokBaru < 0) stokBaru = 0; await supabaseClient.from(tableName).update({ stok: stokBaru }).eq('id', item.id); }
   }
 
   alert(`Pembayaran Berhasil! Total: Rp ${total.toLocaleString('id-ID')}`);
@@ -431,7 +418,10 @@ async function loadProduk() {
   
   list.innerHTML = data.map(p => `
     <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:16px; border-radius:12px; background:var(--bg-main);">
-      <span style="font-weight:600;">${escapeHTML(p.nama)} - Rp ${(p.harga || 0).toLocaleString('id-ID')} (Stok: ${p.stok || 0})</span>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <img src="${p.image_url || 'https://via.placeholder.com/60?text=No+Image'}" alt="${escapeHTML(p.nama)}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">
+        <span style="font-weight:600;">${escapeHTML(p.nama)} <br> <small style="color:var(--text-muted);">Rp ${(p.harga || 0).toLocaleString('id-ID')} | Stok: ${p.stok || 0}</small></span>
+      </div>
       <div style="display:flex; gap:8px;">
         <button class="btn btn-outline" style="padding:6px 12px; font-size:0.85rem;" onclick="editProduk('${p.id}', '${escapeHTML(p.nama).replace(/'/g, "\\'")}', ${p.harga || 0}, ${p.stok || 0})"><i class="fa-solid fa-pen"></i></button>
         <button class="btn btn-danger" style="padding:6px 12px; font-size:0.85rem;" onclick="hapusProduk('${p.id}')"><i class="fa-solid fa-trash"></i></button>
@@ -442,26 +432,39 @@ async function loadProduk() {
 
 document.getElementById("formProduk")?.addEventListener("submit", async (e) => {
   e.preventDefault();
+  const btn = document.getElementById("btnTambahProduk");
   const nama = document.getElementById("newProdukNama").value;
   const harga = Number(document.getElementById("newProdukHarga").value);
   const stok = Number(document.getElementById("newProdukStok").value);
+  const fileGambar = document.getElementById("newProdukGambar").files[0];
   if (stok < 0) return alert("Stok tidak boleh minus!");
 
-  let { error } = await supabaseClient.from("products").insert({ nama, harga, stok });
-  if (error) await supabaseClient.from("produk").insert({ nama, harga, stok });
+  btn.textContent = "Menyimpan..."; btn.disabled = true;
+  let imageUrl = null;
+  try {
+    if (fileGambar) {
+      if (fileGambar.size > 2 * 1024 * 1024) throw new Error("Gambar maksimal 2MB!");
+      const ext = fileGambar.name.split('.').pop();
+      const filePath = `produk_${Date.now()}.${ext}`;
+      const { error: upErr } = await supabaseClient.storage.from('product-images').upload(filePath, fileGambar);
+      if (upErr) throw upErr;
+      const { data: urlData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
+      imageUrl = urlData.publicUrl;
+    }
+    const dataProduk = { nama, harga, stok, image_url: imageUrl };
+    let { error } = await supabaseClient.from("products").insert(dataProduk);
+    if (error) await supabaseClient.from("produk").insert(dataProduk);
 
-  document.getElementById("newProdukNama").value = "";
-  document.getElementById("newProdukHarga").value = "";
-  document.getElementById("newProdukStok").value = "";
-  loadProduk(); loadKasirProducts();
+    document.getElementById("formProduk").reset();
+    loadProduk(); loadKasirProducts();
+  } catch (err) { alert("Gagal menambah produk: " + err.message); }
+  finally { btn.textContent = "Tambah Produk"; btn.disabled = false; }
 });
 
 async function editProduk(id, namaLama, hargaLama, stokLama) {
-  const namaBaru = prompt("Edit Nama:", namaLama);
-  if (namaBaru === null) return;
+  const namaBaru = prompt("Edit Nama:", namaLama); if (namaBaru === null) return;
   const hargaBaru = Number(prompt("Edit Harga:", hargaLama));
   const stokBaru = Number(prompt("Edit Stok:", stokLama));
-  
   if (!namaBaru || isNaN(hargaBaru) || isNaN(stokBaru) || stokBaru < 0) return alert("Input tidak valid!");
 
   let { error } = await supabaseClient.from('products').update({ nama: namaBaru, harga: hargaBaru, stok: stokBaru }).eq('id', id);
@@ -470,13 +473,23 @@ async function editProduk(id, namaLama, hargaLama, stokLama) {
 }
 
 async function hapusProduk(id) {
-  if(confirm("Hapus produk ini?")) {
+  if(!confirm("Hapus produk ini? (Foto akan dihapus permanen)")) return;
+  try {
+    let { data: produk } = await supabaseClient.from('products').select('image_url').eq('id', id).single();
+    if (!produk) { const res = await supabaseClient.from('produk').select('image_url').eq('id', id).single(); produk = res.data; }
+    if (produk && produk.image_url) {
+      const urlParts = produk.image_url.split('/product-images/');
+      if (urlParts.length >= 2) await supabaseClient.storage.from('product-images').remove([urlParts[1]]);
+    }
     let { error } = await supabaseClient.from('products').delete().eq('id', id);
     if (error) await supabaseClient.from('produk').delete().eq('id', id);
     loadProduk(); loadKasirProducts();
-  }
+  } catch (err) { alert("Gagal menghapus produk: " + err.message); }
 }
 
+// ==========================================
+// LAYANAN & CHAT & LAPORAN
+// ==========================================
 async function loadLayanan() {
   const { data } = await supabaseClient.from("services").select("*");
   const list = document.getElementById("layananList");
@@ -513,9 +526,7 @@ async function loadUserList() {
 
 async function loadAdminChat(userId) {
   activeChatUser = userId;
-  const { data } = await supabaseClient.from('chats').select('*')
-    .or(`and(sender_id.eq.${userId},receiver_id.eq.${currentUser.id}),and(sender_id.eq.${currentUser.id},receiver_id.eq.${userId})`).order('created_at');
-  
+  const { data } = await supabaseClient.from('chats').select('*').or(`and(sender_id.eq.${userId},receiver_id.eq.${currentUser.id}),and(sender_id.eq.${currentUser.id},receiver_id.eq.${userId})`).order('created_at');
   const chatBox = document.getElementById('adminChatBox');
   if(!chatBox) return;
   chatBox.innerHTML = data.map(c => `<div class="chat-msg ${c.sender_id === currentUser.id ? 'chat-me' : 'chat-them'}">${escapeHTML(c.pesan)}</div>`).join('');
@@ -528,36 +539,16 @@ document.getElementById('btnAdminSend')?.addEventListener('click', async () => {
   input.value = ''; loadAdminChat(activeChatUser);
 });
 
-document.getElementById("btnSaveLogo")?.addEventListener("click", async () => {
-  await supabaseClient.from("settings").update({ logo_url: document.getElementById("logoUrl").value }).eq("id", 1);
-  alert("Logo Disimpan!"); loadLogo();
-});
-
-document.getElementById("btnSavePaymentSettings")?.addEventListener("click", async () => {
-  const qris = document.getElementById("qrisUrl").value;
-  const bank = document.getElementById("bankInfo").value;
-  const wa = document.getElementById("adminWa").value;
-  await supabaseClient.from("settings").update({ qris_image_url: qris, bank_info: bank, admin_wa_number: wa }).eq("id", 1);
-  alert("Pengaturan Pembayaran Disimpan!");
-});
-
 async function updateStatus(id, status) { await supabaseClient.from("orders").update({ status }).eq("id", id); loadOrders(); }
-async function updateBiaya(id, biaya) { 
-  const num = Number(biaya);
-  await supabaseClient.from("orders").update({ biaya: num, total_amount: num }).eq("id", id); 
-  loadOrders(); 
-}
+async function updateBiaya(id, biaya) { const num = Number(biaya); await supabaseClient.from("orders").update({ biaya: num, total_amount: num }).eq("id", id); loadOrders(); }
 
 async function editDiagnosa(id) {
   const kerusakan = prompt("Diagnosa Kerusakan:"); if (kerusakan === null) return;
   const sparepart = prompt("Sparepart Diganti:"); if (sparepart === null) return;
-  await supabaseClient.from("orders").update({ kerusakan, sparepart }).eq("id", id);
-  loadOrders();
+  await supabaseClient.from("orders").update({ kerusakan, sparepart }).eq("id", id); loadOrders();
 }
 
-async function hapusPesanan(id) { 
-  if(confirm("Hapus pesanan ini?")) { await supabaseClient.from("orders").delete().eq("id", id); loadOrders(); } 
-}
+async function hapusPesanan(id) { if(confirm("Hapus pesanan ini?")) { await supabaseClient.from("orders").delete().eq("id", id); loadOrders(); } }
 
 async function cetakNota(orderId) {
   const { data: order } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
@@ -578,7 +569,7 @@ async function cetakNota(orderId) {
   printWindow.document.write(`
     <html><head><title>Nota - ${escapeHTML(order.nama)}</title>
     <style>
-      body { font-family: 'Courier New', monospace; padding: 20px; color: #000; background: #fff; }
+      body { font-family: 'Courier New', monospace; padding: 20px; color: #000; }
       .nota { max-width: 400px; margin: 0 auto; border: 2px dashed #000; padding: 20px; }
       .header { text-align: center; margin-bottom: 20px; }
       .line { border-top: 1px dashed #000; margin: 10px 0; }
@@ -597,9 +588,7 @@ async function cetakNota(orderId) {
         <div class="row"><span>Pelanggan</span><span>${escapeHTML(order.nama)}</span></div>
         <div class="line"></div>
         <div class="desc"><strong>Layanan:</strong> ${escapeHTML(order.layanan)}</div>
-        ${order.catatan ? `<div class="desc"><strong>Keluhan:</strong> ${escapeHTML(order.catatan)}</div>` : ''}
-        ${order.kerusakan ? `<div class="desc"><strong>Diagnosa:</strong> ${escapeHTML(order.kerusakan)}</div>` : ''}
-        ${order.sparepart ? `<div class="desc"><strong>Sparepart:</strong> ${escapeHTML(order.sparepart)}</div>` : ''}
+        ${order.catatan ? `<div class="desc"><strong>Catatan:</strong> ${escapeHTML(order.catatan)}</div>` : ''}
         ${itemsHtml}
         <div class="line"></div>
         <div class="row total"><span>TOTAL</span><span>${biaya}</span></div>
@@ -617,46 +606,29 @@ async function cetakNota(orderId) {
   printWindow.document.close();
 }
 
-// ==========================================
-// 7. FITUR LAPORAN KEUANGAN & EXPORT CSV
-// ==========================================
 async function loadLaporan() {
   const list = document.getElementById('laporanList');
   const elOmzet = document.getElementById('lapOmzet');
   const elLaba = document.getElementById('lapLaba');
   const elBatal = document.getElementById('lapBatal');
-  
   if (!list) return;
   list.innerHTML = '<tr><td colspan="5" style="text-align: center;">Menghitung data...</td></tr>';
 
   try {
-    const { data: orders, error } = await supabaseClient
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
-
+    const { data: orders, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
     if (error) throw error;
-
     if (!orders || orders.length === 0) {
       list.innerHTML = '<tr><td colspan="5" style="text-align: center;">Belum ada data transaksi.</td></tr>';
-      elOmzet.textContent = 'Rp 0';
-      elLaba.textContent = 'Rp 0';
-      elBatal.textContent = 'Rp 0';
-      return;
+      elOmzet.textContent = 'Rp 0'; elLaba.textContent = 'Rp 0'; elBatal.textContent = 'Rp 0'; return;
     }
 
-    let totalOmzet = 0;
-    let totalBatal = 0;
-    const BIAYA_OPERASIONAL_PERSEN = 0.70; // 70% (Bisa Anda ubah manual di sini)
+    let totalOmzet = 0, totalBatal = 0;
+    const BIAYA_OPERASIONAL_PERSEN = 0.70; 
 
     list.innerHTML = orders.map(o => {
       const nominal = Number(o.total_amount || o.biaya || 0);
-      
-      if (o.payment_status === 'paid') {
-        totalOmzet += nominal;
-      } else if (o.status === 'cancel' || o.payment_status === 'rejected') {
-        totalBatal += nominal;
-      }
+      if (o.payment_status === 'paid') totalOmzet += nominal;
+      else if (o.status === 'cancel' || o.payment_status === 'rejected') totalBatal += nominal;
 
       const statusKerja = o.status ? o.status.toUpperCase() : '-';
       const statusBayar = o.payment_status ? o.payment_status.toUpperCase() : 'UNPAID';
@@ -678,49 +650,155 @@ async function loadLaporan() {
 
     const biayaOperasional = totalOmzet * BIAYA_OPERASIONAL_PERSEN;
     const labaBersih = totalOmzet - biayaOperasional;
-
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
     
     elOmzet.textContent = formatRp(totalOmzet);
     elLaba.textContent = formatRp(labaBersih);
     elBatal.textContent = formatRp(totalBatal);
-
     dataLaporanGlobal = orders;
-
-  } catch (err) {
-    console.error("Error loadLaporan:", err);
-    list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Gagal memuat data laporan.</td></tr>';
-  }
+  } catch (err) { list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Gagal memuat data laporan.</td></tr>'; }
 }
 
 function downloadCSV() {
-  if (dataLaporanGlobal.length === 0) {
-    return alert("Tidak ada data untuk di-download.");
-  }
-
+  if (dataLaporanGlobal.length === 0) return alert("Tidak ada data untuk di-download.");
   try {
     let csvContent = "Tanggal,Nama Pelanggan,Layanan,Status Kerja,Status Pembayaran,Nominal (Rp)\n";
-
     dataLaporanGlobal.forEach(o => {
       const nominal = Number(o.total_amount || o.biaya || 0);
       const tgl = new Date(o.created_at).toLocaleDateString('id-ID');
-      
       const nama = (o.nama || '-').replace(/,/g, '');
       const layanan = (o.layanan || '-').replace(/,/g, '');
-
       csvContent += `${tgl},${nama},${layanan},${o.status},${o.payment_status || 'unpaid'},${nominal}\n`;
     });
-
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute("download", `Laporan_Keuangan_MalikService_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  } catch (err) { alert("Gagal mendownload CSV: " + err.message); }
+}
 
-  } catch (err) {
-    alert("Gagal mendownload CSV: " + err.message);
-  }
+// ==========================================
+// FUNGSI SIMPAN PENGATURAN (ALAMAT, DLL)
+// ==========================================
+document.getElementById("btnSaveLogo")?.addEventListener("click", async () => {
+  await supabaseClient.from("settings").update({ logo_url: document.getElementById("logoUrl").value }).eq("id", 1);
+  alert("Logo Disimpan!"); loadLogo();
+});
+
+document.getElementById("btnSavePaymentSettings")?.addEventListener("click", async () => {
+  const qris = document.getElementById("qrisUrl").value;
+  const bank = document.getElementById("bankInfo").value;
+  const wa = document.getElementById("adminWa").value;
+  await supabaseClient.from("settings").update({ qris_image_url: qris, bank_info: bank, admin_wa_number: wa }).eq("id", 1);
+  alert("Pengaturan Pembayaran Disimpan!");
+});
+
+document.getElementById("btnSaveAlamat")?.addEventListener("click", async () => {
+  const alamat = document.getElementById("alamatToko").value;
+  const maps = document.getElementById("mapsUrl").value;
+  const { error } = await supabaseClient.from("settings").update({ alamat_toko: alamat, maps_url: maps }).eq("id", 1);
+  if (error) alert("Gagal menyimpan alamat: " + error.message);
+  else alert("Alamat dan Peta berhasil disimpan!");
+});
+
+// ==========================================
+// 9. FITUR KELOLA ARTIKEL & IKLAN
+// ==========================================
+async function loadArtikelAdmin() {
+  const list = document.getElementById('artikelListAdmin');
+  if (!list) return;
+  const { data } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
+  
+  if (!data || data.length === 0) { list.innerHTML = '<p>Belum ada artikel.</p>'; return; }
+  
+  list.innerHTML = data.map(a => `
+    <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:16px; border-radius:12px; background:var(--bg-main);">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <img src="${a.image_url || 'https://via.placeholder.com/60?text=No+Image'}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;">
+        <span><strong>${escapeHTML(a.title)}</strong><br><small>${new Date(a.created_at).toLocaleDateString('id-ID')}</small></span>
+      </div>
+      <button class="btn btn-danger" style="padding:6px 12px;" onclick="hapusArtikel('${a.id}')"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  `).join('');
+}
+
+document.getElementById("formArtikel")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("btnTambahArtikel");
+  const title = document.getElementById("artTitle").value;
+  const content = document.getElementById("artContent").value;
+  const file = document.getElementById("artImage").files[0];
+  btn.textContent = "Mengunggah..."; btn.disabled = true;
+  let imageUrl = null;
+
+  try {
+    if (file) {
+      const ext = file.name.split('.').pop();
+      const filePath = `artikel_${Date.now()}.${ext}`;
+      const { error: upErr } = await supabaseClient.storage.from('product-images').upload(filePath, file);
+      if (upErr) throw upErr;
+      const { data: urlData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
+      imageUrl = urlData.publicUrl;
+    }
+    await supabaseClient.from('articles').insert({ title, content, image_url: imageUrl });
+    document.getElementById("formArtikel").reset();
+    loadArtikelAdmin();
+    alert("Artikel berhasil dipublish!");
+  } catch (err) { alert("Gagal: " + err.message); }
+  finally { btn.textContent = "Publish Artikel"; btn.disabled = false; }
+});
+
+async function hapusArtikel(id) {
+  if (!confirm("Hapus artikel ini?")) return;
+  await supabaseClient.from('articles').delete().eq('id', id);
+  loadArtikelAdmin();
+}
+
+async function loadIklanAdmin() {
+  const list = document.getElementById('iklanListAdmin');
+  if (!list) return;
+  const { data } = await supabaseClient.from('ads').select('*').order('created_at', { ascending: false });
+  
+  if (!data || data.length === 0) { list.innerHTML = '<p>Belum ada iklan.</p>'; return; }
+  
+  list.innerHTML = data.map(a => `
+    <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:16px; border-radius:12px; background:var(--bg-main);">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <img src="${a.image_url}" style="width:120px; height:60px; object-fit:cover; border-radius:8px;">
+        <span><strong>${escapeHTML(a.title)}</strong><br><small>${a.link_url}</small></span>
+      </div>
+      <button class="btn btn-danger" style="padding:6px 12px;" onclick="hapusIklan('${a.id}')"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  `).join('');
+}
+
+document.getElementById("formIklan")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("btnTambahIklan");
+  const title = document.getElementById("adsTitle").value;
+  const link_url = document.getElementById("adsLink").value;
+  const file = document.getElementById("adsImage").files[0];
+  btn.textContent = "Mengunggah..."; btn.disabled = true;
+
+  try {
+    const ext = file.name.split('.').pop();
+    const filePath = `iklan_${Date.now()}.${ext}`;
+    const { error: upErr } = await supabaseClient.storage.from('product-images').upload(filePath, file);
+    if (upErr) throw upErr;
+    const { data: urlData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
+    
+    await supabaseClient.from('ads').insert({ title, link_url, image_url: urlData.publicUrl });
+    document.getElementById("formIklan").reset();
+    loadIklanAdmin();
+    alert("Iklan berhasil ditambahkan!");
+  } catch (err) { alert("Gagal: " + err.message); }
+  finally { btn.textContent = "Tambah Banner Iklan"; btn.disabled = false; }
+});
+
+async function hapusIklan(id) {
+  if (!confirm("Hapus iklan ini?")) return;
+  await supabaseClient.from('ads').delete().eq('id', id);
+  loadIklanAdmin();
 }
