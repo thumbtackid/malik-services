@@ -647,7 +647,7 @@ async function loadLaporan() {
 
     let totalOmzet = 0;
     let totalBatal = 0;
-    const BIAYA_OPERASIONAL_PERSEN = 0.20; // 20% (Bisa Anda ubah manual di sini)
+    const BIAYA_OPERASIONAL_PERSEN = 0.70; // 70% (Bisa Anda ubah manual di sini)
 
     list.innerHTML = orders.map(o => {
       const nominal = Number(o.total_amount || o.biaya || 0);
