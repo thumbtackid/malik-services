@@ -33,6 +33,7 @@
       <a href="#" onclick="showTab('produk')"><i class="fa-solid fa-box"></i> Katalog Produk</a>
       <a href="#" onclick="showTab('layanan')"><i class="fa-solid fa-tags"></i> Edit Layanan</a>
       <a href="#" onclick="showTab('chat')"><i class="fa-solid fa-comments"></i> Chat Masuk</a>
+      <a href="#" onclick="showTab('laporan')"><i class="fa-solid fa-chart-line"></i> Laporan Keuangan</a> <!-- MENU BARU -->
       <a href="#" onclick="showTab('setting')"><i class="fa-solid fa-gear"></i> Pengaturan</a>
     </nav>
     <div style="padding-top:20px; border-top:1px solid var(--border);">
@@ -138,6 +139,50 @@
             <button class="btn btn-primary" id="btnAdminSend">Kirim</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- LAPORAN KEUANGAN (BARU) -->
+    <div id="tab-laporan" class="card hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+        <h2><i class="fa-solid fa-chart-line"></i> Laporan Keuangan</h2>
+        <button class="btn btn-primary" onclick="downloadCSV()"><i class="fa-solid fa-download"></i> Download Laporan (CSV)</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card primary" style="background: #10b981; border-color: #059669;">
+          <h4>Total Omzet (Lunas)</h4>
+          <div class="value" id="lapOmzet">Rp 0</div>
+        </div>
+        <div class="stat-card">
+          <h4>Estimasi Laba Bersih*</h4>
+          <div class="value" id="lapLaba" style="color: #10b981;">Rp 0</div>
+        </div>
+        <div class="stat-card">
+          <h4>Potensi Batal/Tolak</h4>
+          <div class="value" id="lapBatal" style="color: #ef4444;">Rp 0</div>
+        </div>
+      </div>
+
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+        *Estimasi Laba Bersih dihitung dari (Omzet - 20% Biaya Operasional). Anda dapat mengubah persentase ini di dalam fungsi <code>loadLaporan()</code> pada <code>admin.js</code>.
+      </p>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Nama Pelanggan</th>
+              <th>Layanan</th>
+              <th>Status</th>
+              <th style="text-align: right;">Nominal (Rp)</th>
+            </tr>
+          </thead>
+          <tbody id="laporanList">
+            <tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
