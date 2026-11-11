@@ -44,9 +44,14 @@ let produkPilihan = null;
 
       if (error) { alert("Gagal: " + error.message); btn.textContent = "Kirim Pesanan"; return; }
 
-      await supabaseClient.from('notifications').insert({
-        title: 'Pesanan Baru', message: `Pesanan servis dari ${document.getElementById("orderNama").value}`, type: 'new_order'
-      });
+      // Notifikasi terpisah, jika gagal tidak menggagalkan pesanan utama
+      try {
+        await supabaseClient.from('notifications').insert({
+          title: 'Pesanan Baru', message: `Pesanan servis dari ${document.getElementById("orderNama").value}`, type: 'new_order'
+        });
+      } catch (errNotif) {
+        console.warn("Notifikasi admin gagal dikirim:", errNotif.message);
+      }
 
       alert("Pesanan Terkirim! Silakan cek di Riwayat.");
       e.target.reset(); btn.textContent = "Kirim Pesanan"; showTab('riwayat');
@@ -76,10 +81,9 @@ async function loadKatalog() {
   if(!list) return;
   list.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Memuat katalog...</p>';
 
-  let { data } = await supabaseClient.from('products').select('*').order('nama');
-  if (!data) { const res = await supabaseClient.from('produk').select('*').order('nama'); data = res.data; }
+  const { data, error } = await supabaseClient.from('products').select('*').order('nama');
 
-  if (!data || data.length === 0) {
+  if (error || !data || data.length === 0) {
     list.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Belum ada produk yang dijual.</p>';
     return;
   }
@@ -150,18 +154,27 @@ async function prosesPesananKatalog() {
     layanan: 'Pembelian Sparepart',
     catatan: catatan,
     total_amount: total,
-    payment_status: 'unpaid'
+    payment_status: 'unpaid',
+    stock_returned: false
   }).select().single();
 
   if (error) return alert("Gagal membuat pesanan: " + error.message);
 
-  await supabaseClient.from('order_items').insert({
+  const { error: itemErr } = await supabaseClient.from('order_items').insert({
     order_id: order.id, product_id: produkPilihan.id, nama_produk: produkPilihan.nama, qty: 1, harga_satuan: produkPilihan.harga, subtotal: produkPilihan.harga
   });
 
-  await supabaseClient.from('notifications').insert({
-    title: 'Pesanan Produk Baru', message: `Pesanan produk dari ${currentUser.email}`, type: 'new_order'
-  });
+  if (itemErr) {
+    // Jika gagal simpan item, hapus order agar tidak ada data menggantung
+    await supabaseClient.from('orders').delete().eq('id', order.id);
+    return alert("Gagal menyimpan rincian pesanan: " + itemErr.message);
+  }
+
+  try {
+    await supabaseClient.from('notifications').insert({
+      title: 'Pesanan Produk Baru', message: `Pesanan produk dari ${currentUser.email}`, type: 'new_order'
+    });
+  } catch (e) { console.warn("Notif gagal:", e.message); }
 
   closeModalPengiriman();
   alert("Pesanan berhasil dibuat! Lanjutkan ke pembayaran.");
@@ -341,7 +354,8 @@ document.getElementById('btnSendChat')?.addEventListener('click', async () => {
   const { data: admins } = await supabaseClient.from('profiles').select('id').eq('role', 'admin').limit(1);
   const adminId = admins && admins[0]?.id;
   if(!adminId) return alert("Admin belum ada di sistem.");
-  await supabaseClient.from('chats').insert({ sender_id: currentUser.id, receiver_id: adminId, pesan: input.value });
+  const { error } = await supabaseClient.from('chats').insert({ sender_id: currentUser.id, receiver_id: adminId, pesan: input.value });
+  if (error) return alert("Pesan gagal dikirim: " + error.message);
   input.value = ''; loadChat();
 });
 
@@ -399,6 +413,7 @@ async function submitPaymentProof() {
 
   if (!file) { msg.style.color = 'var(--danger)'; msg.textContent = 'Pilih bukti bayar dulu!'; return; }
   if (file.size > 2 * 1024 * 1024) { msg.style.color = 'var(--danger)'; msg.textContent = 'File maksimal 2MB!'; return; }
+  if (!file.type.startsWith('image/')) { msg.style.color = 'var(--danger)'; msg.textContent = 'File harus berupa gambar (JPG/PNG)!'; return; }
 
   btn.disabled = true; btn.textContent = 'Mengunggah...'; msg.textContent = '';
 
@@ -419,9 +434,11 @@ async function submitPaymentProof() {
 
     if (updErr) throw updErr;
 
-    await supabaseClient.from('notifications').insert({
-      title: 'Konfirmasi Pembayaran Baru', message: `User ${currentUser.email} mengunggah bukti pembayaran.`, type: 'payment_verification', order_id: activeOrderForPayment
-    });
+    try {
+      await supabaseClient.from('notifications').insert({
+        title: 'Konfirmasi Pembayaran Baru', message: `User ${currentUser.email} mengunggah bukti pembayaran.`, type: 'payment_verification', order_id: activeOrderForPayment
+      });
+    } catch (e) { console.warn("Notif gagal:", e.message); }
 
     msg.style.color = 'var(--success)'; msg.textContent = '✅ Bukti terkirim! Menunggu verifikasi admin.';
     setTimeout(() => { closeCheckout(); loadRiwayat(); }, 1500);

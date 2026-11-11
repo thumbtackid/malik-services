@@ -228,19 +228,11 @@ async function verifikasiPembayaran(orderId, isAccept) {
       let berhasilPotong = 0;
       for (let item of orderItems) {
         let { data: prod } = await supabaseClient.from('products').select('stok').eq('id', item.product_id).single();
-        if (!prod) { 
-          const res = await supabaseClient.from('produk').select('stok').eq('id', item.product_id).single(); 
-          prod = res.data; 
-        }
-        
         if (prod) {
           let stokBaru = (prod.stok || 0) - item.qty;
           if (stokBaru < 0) stokBaru = 0;
-          
           let { error: errStok } = await supabaseClient.from('products').update({ stok: stokBaru }).eq('id', item.product_id);
-          if (errStok) await supabaseClient.from('produk').update({ stok: stokBaru }).eq('id', item.product_id);
-          
-          berhasilPotong++;
+          if (!errStok) berhasilPotong++;
         }
       }
       if (berhasilPotong > 0) alert(`Stok berhasil dipotong untuk ${berhasilPotong} barang!`);
@@ -275,24 +267,7 @@ async function verifikasiPembayaran(orderId, isAccept) {
     await supabaseClient.from('chats').insert({ sender_id: currentUser.id, receiver_id: order.user_id, pesan: msg });
   }
 
-  // 6. Kirim WA
-  if (order.telepon) {
-    const waNumber = order.telepon.replace(/[^0-9]/g, '').replace(/^0/, '62');
-    const waPesan = isAccept 
-      ? `Halo ${order.nama}, pembayaran Anda untuk order #${orderId.split('-')[0]} telah diverifikasi. Terima kasih!`
-      : `Halo ${order.nama}, bukti pembayaran untuk order #${orderId.split('-')[0]} ditolak. Silakan upload ulang.`;
-    kirimWA(waNumber, waPesan);
-  }
-
   loadVerifikasiList(); loadOrders();
-}
-
-async function kirimWA(target, message) {
-  try {
-    const { data, error } = await supabaseClient.functions.invoke('send-wa', { body: { target, message } });
-    if (error) throw error;
-    console.log('WA Terkirim:', data);
-  } catch (e) { console.error("Gagal kirim WA:", e.message); }
 }
 
 async function loadNotifications() {
@@ -327,6 +302,7 @@ async function loadNotifications() {
 }
 
 async function markAllRead() {
+  if (!confirm("Tandai semua notifikasi sebagai sudah dibaca?")) return;
   await supabaseClient.from('notifications').update({ is_read: true }).eq('is_read', false);
   loadNotifications();
 }
@@ -344,8 +320,6 @@ async function hapusSemuaNotif() {
 // ==========================================
 async function loadKasirProducts() {
   let { data } = await supabaseClient.from('products').select('*').order('nama');
-  if (!data) { const res = await supabaseClient.from('produk').select('*').order('nama'); data = res.data; }
-
   const list = document.getElementById('kasirProductList');
   if (!list) return;
   if (!data || data.length === 0) { list.innerHTML = '<p>Belum ada produk.</p>'; return; }
@@ -419,20 +393,26 @@ async function prosesKasir() {
     layanan: 'Pembelian Sparepart',
     status: 'done', biaya: total, total_amount: total,
     payment_status: 'paid', payment_method: 'cash',
-    catatan: 'Transaksi langsung di toko', paid_at: new Date().toISOString()
+    catatan: 'Transaksi langsung di toko', paid_at: new Date().toISOString(),
+    stock_returned: false
   }).select().single();
 
   if (orderError) return alert("Gagal membuat pesanan: " + orderError.message);
 
   const items = kasirCart.map(c => ({ order_id: order.id, product_id: c.id, nama_produk: c.nama, qty: c.qty, harga_satuan: c.harga, subtotal: c.harga * c.qty }));
   const { error: itemError } = await supabaseClient.from('order_items').insert(items);
-  if (itemError) { await supabaseClient.from('orders').delete().eq('id', order.id); return alert("Gagal simpan rincian: " + itemError.message); }
+  if (itemError) { 
+    await supabaseClient.from('orders').delete().eq('id', order.id); 
+    return alert("Gagal simpan rincian: " + itemError.message); 
+  }
 
   for (let item of kasirCart) {
-    let tableName = 'products';
-    let { data: prod } = await supabaseClient.from(tableName).select('stok').eq('id', item.id).single();
-    if (!prod) { tableName = 'produk'; const res = await supabaseClient.from(tableName).select('stok').eq('id', item.id).single(); prod = res.data; }
-    if (prod) { let stokBaru = prod.stok - item.qty; if (stokBaru < 0) stokBaru = 0; await supabaseClient.from(tableName).update({ stok: stokBaru }).eq('id', item.id); }
+    let { data: prod } = await supabaseClient.from('products').select('stok').eq('id', item.id).single();
+    if (prod) { 
+      let stokBaru = prod.stok - item.qty; 
+      if (stokBaru < 0) stokBaru = 0; 
+      await supabaseClient.from('products').update({ stok: stokBaru }).eq('id', item.id); 
+    }
   }
 
   alert(`Pembayaran Berhasil! Total: Rp ${total.toLocaleString('id-ID')}`);
@@ -441,7 +421,6 @@ async function prosesKasir() {
 
 async function loadProduk() {
   let { data } = await supabaseClient.from('products').select('*').order('nama');
-  if (!data) { const res = await supabaseClient.from('produk').select('*').order('nama'); data = res.data; }
 
   const list = document.getElementById('produkList');
   if (!list) return;
@@ -483,8 +462,8 @@ document.getElementById("formProduk")?.addEventListener("submit", async (e) => {
       imageUrl = urlData.publicUrl;
     }
     const dataProduk = { nama, harga, stok, image_url: imageUrl };
-    let { error } = await supabaseClient.from("products").insert(dataProduk);
-    if (error) await supabaseClient.from("produk").insert(dataProduk);
+    const { error } = await supabaseClient.from("products").insert(dataProduk);
+    if (error) throw error;
 
     document.getElementById("formProduk").reset();
     loadProduk(); loadKasirProducts();
@@ -498,8 +477,8 @@ async function editProduk(id, namaLama, hargaLama, stokLama) {
   const stokBaru = Number(prompt("Edit Stok:", stokLama));
   if (!namaBaru || isNaN(hargaBaru) || isNaN(stokBaru) || stokBaru < 0) return alert("Input tidak valid!");
 
-  let { error } = await supabaseClient.from('products').update({ nama: namaBaru, harga: hargaBaru, stok: stokBaru }).eq('id', id);
-  if (error) await supabaseClient.from('produk').update({ nama: namaBaru, harga: hargaBaru, stok: stokBaru }).eq('id', id);
+  const { error } = await supabaseClient.from('products').update({ nama: namaBaru, harga: hargaBaru, stok: stokBaru }).eq('id', id);
+  if (error) return alert("Gagal update produk: " + error.message);
   loadProduk(); loadKasirProducts();
 }
 
@@ -507,13 +486,12 @@ async function hapusProduk(id) {
   if(!confirm("Hapus produk ini? (Foto akan dihapus permanen)")) return;
   try {
     let { data: produk } = await supabaseClient.from('products').select('image_url').eq('id', id).single();
-    if (!produk) { const res = await supabaseClient.from('produk').select('image_url').eq('id', id).single(); produk = res.data; }
     if (produk && produk.image_url) {
       const urlParts = produk.image_url.split('/product-images/');
       if (urlParts.length >= 2) await supabaseClient.storage.from('product-images').remove([urlParts[1]]);
     }
-    let { error } = await supabaseClient.from('products').delete().eq('id', id);
-    if (error) await supabaseClient.from('produk').delete().eq('id', id);
+    const { error } = await supabaseClient.from('products').delete().eq('id', id);
+    if (error) throw error;
     loadProduk(); loadKasirProducts();
   } catch (err) { alert("Gagal menghapus produk: " + err.message); }
 }
@@ -571,31 +549,50 @@ document.getElementById('btnAdminSend')?.addEventListener('click', async () => {
 });
 
 // ==========================================
-// FUNGSI UPDATE STATUS & STOK (KEMBALIKAN STOK SAAT BATAL)
+// FUNGSI UPDATE STATUS & STOK (SUDAH DIPERBAIKI)
 // ==========================================
 async function updateStatus(id, status) {
+  // 1. Ambil data pesanan
   const { data: order } = await supabaseClient.from('orders').select('*').eq('id', id).single();
   if (!order) return alert("Pesanan tidak ditemukan.");
-  if (order.status === status) return;
+  if (order.status === status) return; // Jika status sama, abaikan
 
+  // 2. Update status pesanan
   await supabaseClient.from("orders").update({ status }).eq("id", id);
 
-  // LOGIKA STOK: Kembalikan stok jika dibatalkan
-  if (status === 'cancel' && order.status !== 'cancel') {
+  // 3. Logika Stok: Kembalikan stok HANYA JIKA belum pernah dikembalikan
+  if (status === 'cancel' && order.status !== 'cancel' && !order.stock_returned) {
     const { data: items } = await supabaseClient.from('order_items').select('*').eq('order_id', id);
     
     if (items && items.length > 0) {
       for (let item of items) {
         let { data: prod } = await supabaseClient.from('products').select('stok').eq('id', item.product_id).single();
-        if (!prod) { const res = await supabaseClient.from('produk').select('stok').eq('id', item.product_id).single(); prod = res.data; }
-        
         if (prod) {
-          let stokBaru = (prod.stok || 0) + item.qty; // Tambahkan kembali
-          let { error } = await supabaseClient.from('products').update({ stok: stokBaru }).eq('id', item.product_id);
-          if (error) await supabaseClient.from('produk').update({ stok: stokBaru }).eq('id', item.product_id);
+          let stokBaru = (prod.stok || 0) + item.qty;
+          await supabaseClient.from('products').update({ stok: stokBaru }).eq('id', item.product_id);
         }
       }
+      // Tandai bahwa stok sudah dikembalikan
+      await supabaseClient.from('orders').update({ stock_returned: true }).eq('id', id);
       alert("Pesanan dibatalkan. Stok telah dikembalikan!");
+    }
+  }
+
+  // 4. Jika diubah ke 'done' dan sebelumnya stok sudah dikembalikan, potong lagi
+  if (status === 'done' && order.stock_returned) {
+    const { data: items } = await supabaseClient.from('order_items').select('*').eq('order_id', id);
+    
+    if (items && items.length > 0) {
+      for (let item of items) {
+        let { data: prod } = await supabaseClient.from('products').select('stok').eq('id', item.product_id).single();
+        if (prod) {
+          let stokBaru = (prod.stok || 0) - item.qty;
+          if (stokBaru < 0) stokBaru = 0;
+          await supabaseClient.from('products').update({ stok: stokBaru }).eq('id', item.product_id);
+        }
+      }
+      // Kembalikan penanda ke false karena stok sudah dipotong lagi
+      await supabaseClient.from('orders').update({ stock_returned: false }).eq('id', id);
     }
   }
 
@@ -718,7 +715,7 @@ async function loadLaporan() {
     elLaba.textContent = formatRp(labaBersih);
     elBatal.textContent = formatRp(totalBatal);
     dataLaporanGlobal = orders;
-  } catch (err) { list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Gagal memuat data laporan.</td></tr>'; }
+  } catch (err) { list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Gagal memuat laporan.</td></tr>'; }
 }
 
 function downloadCSV() {
