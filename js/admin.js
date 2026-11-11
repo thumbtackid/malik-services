@@ -216,9 +216,38 @@ async function verifikasiPembayaran(orderId, isAccept) {
   const updateData = { payment_status: newStatus, verified_by: currentUser.id };
   if (isAccept) updateData.paid_at = new Date().toISOString();
 
+  // 1. Update status pembayaran
   const { error } = await supabaseClient.from('orders').update(updateData).eq('id', orderId);
   if (error) return alert("Gagal update: " + error.message);
 
+  // 2. KURANGI STOK PRODUK JIKA PEMBAYARAN DITERIMA (LUNAS)
+  if (isAccept) {
+    const { data: orderItems } = await supabaseClient.from('order_items').select('*').eq('order_id', orderId);
+    
+    if (orderItems && orderItems.length > 0) {
+      let berhasilPotong = 0;
+      for (let item of orderItems) {
+        let { data: prod } = await supabaseClient.from('products').select('stok').eq('id', item.product_id).single();
+        if (!prod) { 
+          const res = await supabaseClient.from('produk').select('stok').eq('id', item.product_id).single(); 
+          prod = res.data; 
+        }
+        
+        if (prod) {
+          let stokBaru = (prod.stok || 0) - item.qty;
+          if (stokBaru < 0) stokBaru = 0;
+          
+          let { error: errStok } = await supabaseClient.from('products').update({ stok: stokBaru }).eq('id', item.product_id);
+          if (errStok) await supabaseClient.from('produk').update({ stok: stokBaru }).eq('id', item.product_id);
+          
+          berhasilPotong++;
+        }
+      }
+      if (berhasilPotong > 0) alert(`Stok berhasil dipotong untuk ${berhasilPotong} barang!`);
+    }
+  }
+
+  // 3. Ambil data user untuk notifikasi
   const { data: order, error: orderErr } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
 
   if (orderErr || !order) {
@@ -226,6 +255,7 @@ async function verifikasiPembayaran(orderId, isAccept) {
     loadVerifikasiList(); loadOrders(); return;
   }
   
+  // 4. Hapus gambar bukti transfer jika diterima
   if (isAccept && order.payment_proof_url) {
     try {
       const urlParts = order.payment_proof_url.split('/payment-proofs/');
@@ -239,11 +269,13 @@ async function verifikasiPembayaran(orderId, isAccept) {
     } catch (e) { console.error("Error auto-delete gambar:", e); }
   }
 
+  // 5. Kirim pesan ke user
   if (order.user_id) {
     const msg = isAccept ? "✅ Pembayaran Anda telah diverifikasi. Pesanan sedang diproses." : "❌ Bukti pembayaran ditolak. Silakan upload ulang.";
     await supabaseClient.from('chats').insert({ sender_id: currentUser.id, receiver_id: order.user_id, pesan: msg });
   }
 
+  // 6. Kirim WA
   if (order.telepon) {
     const waNumber = order.telepon.replace(/[^0-9]/g, '').replace(/^0/, '62');
     const waPesan = isAccept 
@@ -252,7 +284,6 @@ async function verifikasiPembayaran(orderId, isAccept) {
     kirimWA(waNumber, waPesan);
   }
 
-  alert(isAccept ? "Pembayaran Diterima & Gambar Bukti Dihapus!" : "Pembayaran Ditolak!");
   loadVerifikasiList(); loadOrders();
 }
 
@@ -539,7 +570,38 @@ document.getElementById('btnAdminSend')?.addEventListener('click', async () => {
   input.value = ''; loadAdminChat(activeChatUser);
 });
 
-async function updateStatus(id, status) { await supabaseClient.from("orders").update({ status }).eq("id", id); loadOrders(); }
+// ==========================================
+// FUNGSI UPDATE STATUS & STOK (KEMBALIKAN STOK SAAT BATAL)
+// ==========================================
+async function updateStatus(id, status) {
+  const { data: order } = await supabaseClient.from('orders').select('*').eq('id', id).single();
+  if (!order) return alert("Pesanan tidak ditemukan.");
+  if (order.status === status) return;
+
+  await supabaseClient.from("orders").update({ status }).eq("id", id);
+
+  // LOGIKA STOK: Kembalikan stok jika dibatalkan
+  if (status === 'cancel' && order.status !== 'cancel') {
+    const { data: items } = await supabaseClient.from('order_items').select('*').eq('order_id', id);
+    
+    if (items && items.length > 0) {
+      for (let item of items) {
+        let { data: prod } = await supabaseClient.from('products').select('stok').eq('id', item.product_id).single();
+        if (!prod) { const res = await supabaseClient.from('produk').select('stok').eq('id', item.product_id).single(); prod = res.data; }
+        
+        if (prod) {
+          let stokBaru = (prod.stok || 0) + item.qty; // Tambahkan kembali
+          let { error } = await supabaseClient.from('products').update({ stok: stokBaru }).eq('id', item.product_id);
+          if (error) await supabaseClient.from('produk').update({ stok: stokBaru }).eq('id', item.product_id);
+        }
+      }
+      alert("Pesanan dibatalkan. Stok telah dikembalikan!");
+    }
+  }
+
+  loadOrders(); 
+}
+
 async function updateBiaya(id, biaya) { const num = Number(biaya); await supabaseClient.from("orders").update({ biaya: num, total_amount: num }).eq("id", id); loadOrders(); }
 
 async function editDiagnosa(id) {
@@ -704,7 +766,7 @@ document.getElementById("btnSaveAlamat")?.addEventListener("click", async () => 
 });
 
 // ==========================================
-// 9. FITUR KELOLA ARTIKEL & IKLAN (PERBAIKAN)
+// 9. FITUR KELOLA ARTIKEL & IKLAN
 // ==========================================
 async function loadArtikelAdmin() {
   const list = document.getElementById('artikelListAdmin');

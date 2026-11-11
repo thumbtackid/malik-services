@@ -171,7 +171,6 @@ async function prosesPesananKatalog() {
 
 // ====== FITUR CEK RESI ======
 async function cekResi() {
-  // Hanya mencari berdasarkan No. Resi
   let input = document.getElementById('inputResi').value.trim().toUpperCase().replace('#', '');
   const hasil = document.getElementById('hasilResi');
   if (!input) return alert("Masukkan nomor resi atau ID pesanan!");
@@ -245,8 +244,6 @@ async function loadRiwayat() {
     const needPay = (o.payment_status === 'unpaid' || o.payment_status === 'rejected' || !o.payment_status) && o.status !== 'cancel';
     const waitingVerify = o.payment_status === 'waiting_verification';
     const orderIdShort = o.id.split('-')[0].toUpperCase();
-    
-    // Cek apakah admin sudah mengisi No. Resi
     const hasResi = o.no_resi && o.no_resi.trim() !== "";
 
     return `
@@ -264,7 +261,6 @@ async function loadRiwayat() {
         <small style="color:var(--text-main); font-weight:600;">Catatan: ${escapeHTML(o.catatan)}</small><br>
         <small style="color:var(--text-main); font-weight:600;">Total: ${total ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(total) : 'Belum ditentukan'}</small>
         
-        <!-- TAMPILKAN NO RESI JIKA ADA -->
         ${hasResi ? `<div style="margin-top:8px; padding:8px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; font-size:0.85rem; color:#166534;">
           <i class="fa-solid fa-truck-fast"></i> <strong>No. Resi:</strong> ${escapeHTML(o.no_resi)}
         </div>` : ''}
@@ -274,7 +270,6 @@ async function loadRiwayat() {
         ${needPay ? `<button class="btn btn-primary" onclick="openCheckout('${o.id}')"><i class="fa-solid fa-qrcode"></i> Bayar Sekarang</button>` : ''}
         ${waitingVerify ? `<span style="font-size:0.85rem; color:var(--warning);"><i class="fa-solid fa-hourglass-half"></i> Menunggu verifikasi</span>` : ''}
         
-        <!-- TOMBOL LACAK JIKA RESI SUDAH ADA -->
         ${hasResi ? `<button class="btn btn-outline" onclick="document.getElementById('inputResi').value='${escapeHTML(o.no_resi)}'; showTab('resi'); cekResi();"><i class="fa-solid fa-magnifying-glass-location"></i> Lacak Paket</button>` : ''}
         
         ${o.status === 'done' && o.payment_status === 'paid' ? `<button class="btn btn-outline" onclick="cetakNota('${o.id}')"><i class="fa-solid fa-print"></i> Nota</button>` : ''}
