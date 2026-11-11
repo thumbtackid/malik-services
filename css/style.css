@@ -154,23 +154,21 @@ a { text-decoration: none; color: inherit; }
 .chart-filters button { background: transparent; border: none; color: #94a3b8; padding: 6px 16px; font-size: 0.85rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; }
 .chart-filters button.active { background: #4f46e5; color: white; }
 
-/* ====== BANNER IKLAN (TANPA ANIMASI CSS) ====== */
+/* ====== BANNER IKLAN ====== */
 .banner-wrapper {
   width: 100%;
-  height: 250px;       /* Tinggi kotak banner */
-  overflow: hidden;    /* Agar gambar tidak keluar batas */
+  height: 250px;
+  overflow: hidden;
   border-radius: 12px;
   box-shadow: var(--shadow);
   background: #f8fafc;
   position: relative;
 }
-
 .banner-wrapper img {
   width: 100%;
-  height: auto;        /* Biarkan gambar menyesuaikan tinggi aslinya */
+  height: auto;
   object-fit: cover;
   display: block;
-  /* Animasi akan dijalankan oleh JavaScript */
 }
 
 /* ====== MODAL ARTIKEL ====== */
@@ -179,21 +177,22 @@ a { text-decoration: none; color: inherit; }
   background: rgba(0,0,0,0.7); z-index: 2000;
   display: flex; align-items: center; justify-content: center;
   padding: 20px; backdrop-filter: blur(5px);
+  animation: fadeIn 0.25s ease;
 }
 .modal-artikel-box {
-  background: white; border-radius: 20px; width: 100%; max-width: 700px;
+  background: white; border-radius: 20px; width: 100%; max-width: 720px;
   max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
   animation: slideUp 0.4s ease;
 }
 .modal-artikel-head {
   position: sticky; top: 0; background: white; z-index: 1;
-  padding: 20px; border-bottom: 1px solid var(--line);
-  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 24px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
 }
-.modal-artikel-head h2 { font-size: 1.2rem; margin: 0; }
+.modal-artikel-head h2 { font-size: 1.15rem; margin: 0; line-height: 1.4; }
 .modal-artikel-close {
   background: none; border: none; font-size: 1.8rem; cursor: pointer;
-  color: var(--muted); line-height: 1; transition: 0.2s;
+  color: var(--text-muted); line-height: 1; transition: 0.2s; flex-shrink: 0;
 }
 .modal-artikel-close:hover { color: var(--danger); transform: rotate(90deg); }
 .modal-artikel-body { padding: 24px; }
@@ -201,12 +200,21 @@ a { text-decoration: none; color: inherit; }
   width: 100%; max-height: 350px; object-fit: cover;
   border-radius: 12px; margin-bottom: 20px;
 }
-.modal-artikel-body p {
-  font-size: 1rem; color: var(--ink); line-height: 1.8;
-  white-space: pre-line; /* Agar enter/baris baru berfungsi */
+.modal-artikel-body .artikel-konten {
+  font-size: 1rem; color: var(--text-main); line-height: 1.85;
+}
+.modal-artikel-body .artikel-konten p { margin-bottom: 14px; }
+.modal-artikel-body .artikel-konten h1,
+.modal-artikel-body .artikel-konten h2,
+.modal-artikel-body .artikel-konten h3 {
+  margin: 18px 0 10px; line-height: 1.4;
+}
+.modal-artikel-body .artikel-konten ul,
+.modal-artikel-body .artikel-konten ol {
+  margin: 0 0 14px 22px;
 }
 
-/* ====== RESPONSIVE (TAMPILAN HP) ====== */
+/* ====== RESPONSIVE ====== */
 @media (max-width: 768px) {
   .app-body { flex-direction: column; }
   .sidebar { width: 100%; height: auto; position: relative; padding: 16px; flex-direction: column; align-items: flex-start; border-right: none; border-bottom: 1px solid var(--border); }
@@ -219,3 +227,49 @@ a { text-decoration: none; color: inherit; }
   .grid-2 { grid-template-columns: 1fr; }
   .table th, .table td { padding: 12px 8px; font-size: 0.85rem; }
 }
+/* ====== PERBAIKAN TAMBAHAN ====== */
+.brand small {
+  display: block;
+  color: #98a2b3;
+  font-size: 9px;
+  letter-spacing: 1.6px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.footer .brand small { color: #98a2b3 !important; }
+
+/* Fallback logo: sembunyikan img kosong */
+img.brand-logo:not([src]), img.brand-logo[src=""] { display: none; }
+
+/* Cookie consent banner */
+.cookie-banner {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  max-width: 480px;
+  margin: auto;
+  background: #101828;
+  color: #f8fafc;
+  padding: 16px 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  z-index: 9999;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideUp 0.4s ease;
+}
+.cookie-banner a { color: #a5b4fc; font-weight: 700; }
+.cookie-banner button {
+  align-self: flex-end;
+  padding: 8px 18px;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cookie-banner button:hover { background: #4338ca; }

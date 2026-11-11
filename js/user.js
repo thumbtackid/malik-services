@@ -191,6 +191,7 @@ async function cekResi() {
 
   const order = data[0];
   const isDelivery = order.catatan?.includes('[DIANTAR]');
+  const paymentStatus = (order.payment_status || 'unpaid').toUpperCase();
   
   hasil.innerHTML = `
     <div style="text-align: left; padding: 10px;">
@@ -198,16 +199,16 @@ async function cekResi() {
       <p><strong>No. Nota:</strong> #${order.id.split('-')[0].toUpperCase()}</p>
       <p><strong>Nama:</strong> ${escapeHTML(order.nama)}</p>
       <p><strong>Layanan:</strong> ${escapeHTML(order.layanan)}</p>
-      <p><strong>Status Pembayaran:</strong> <span class="badge ${order.payment_status === 'paid' ? 'badge-done' : 'badge-danger'}">${order.payment_status.toUpperCase()}</span></p>
+      <p><strong>Status Pembayaran:</strong> <span class="badge ${order.payment_status === 'paid' ? 'badge-done' : 'badge-danger'}">${paymentStatus}</span></p>
       
       <hr style="margin: 12px 0; border: 1px solid var(--border);">
       
       <h4 style="margin-bottom: 8px;">Status Pengiriman:</h4>
       ${isDelivery 
         ? `<p style="color: var(--success); font-weight: 700;"><i class="fa-solid fa-truck-fast"></i> Paket Sedang Dikirim ke Alamat Tujuan</p>
-           <p style="font-size: 0.85rem; color: var(--text-muted);">Alamat: ${escapeHTML(order.alamat)}</p>` 
+           <p style="font-size: 0.85rem; color: var(--text-muted);">Alamat: ${escapeHTML(order.alamat || '-')}</p>` 
         : `<p style="color: var(--warning); font-weight: 700;"><i class="fa-solid fa-store"></i> Silakan Ambil di Toko</p>
-           <p style="font-size: 0.85rem; color: var(--text-muted);">Alamat Toko: ${settingsData.alamat_toko || 'Hubungi Admin'}</p>`
+           <p style="font-size: 0.85rem; color: var(--text-muted);">Alamat Toko: ${escapeHTML(settingsData.alamat_toko || 'Hubungi Admin')}</p>`
       }
       ${order.no_resi ? `<p style="margin-top: 10px;"><strong>No. Resi:</strong> ${escapeHTML(order.no_resi)}</p>` : ''}
     </div>
@@ -272,7 +273,7 @@ function loadSelectLacak() {
     document.getElementById('timelineContainer').innerHTML = '<p style="text-align:center; color:var(--text-muted);">Belum ada pesanan.</p>';
     return;
   }
-  select.innerHTML = userOrdersData.map(o => `<option value="${o.id}">${o.layanan} - ${new Date(o.created_at).toLocaleDateString('id-ID')}</option>`).join('');
+  select.innerHTML = userOrdersData.map(o => `<option value="${o.id}">${escapeHTML(o.layanan)} - ${new Date(o.created_at).toLocaleDateString('id-ID')}</option>`).join('');
   renderTimeline(select.value);
 }
 
@@ -389,7 +390,7 @@ async function submitPaymentProof() {
   btn.disabled = true; btn.textContent = 'Mengunggah...'; msg.textContent = '';
 
   try {
-    const ext = file.name.split('.').pop();
+    const ext = file.name.split('.').pop().toLowerCase();
     const filePath = `${activeOrderForPayment}/${Date.now()}.${ext}`;
     
     const { error: upErr } = await supabaseClient.storage.from('payment-proofs').upload(filePath, file);
@@ -461,7 +462,7 @@ async function cetakNota(orderId) {
         <div class="row total"><span>TOTAL</span><span>${biaya}</span></div>
         <div class="line"></div>
         <div class="footer">
-          <p>Status: <strong>${order.status.toUpperCase()}</strong></p>
+          <p>Status: <strong>${(order.status || '-').toUpperCase()}</strong></p>
           <p>Pembayaran: <strong>${(order.payment_status || 'unpaid').toUpperCase()}</strong></p>
           <p>Terima kasih telah menggunakan layanan kami.</p>
         </div>

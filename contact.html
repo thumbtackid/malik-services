@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kontak • Malik Service</title>
+  <meta name="description" content="Hubungi Malik Service untuk konsultasi servis elektronik di Semarang.">
+  <link rel="canonical" href="https://malikservice.my.id/contact.html">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    .contact-wrap { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    .contact-wrap h1 { font-size: 2rem; margin-bottom: 8px; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px; }
+    @media (max-width: 700px) { .contact-grid { grid-template-columns: 1fr; } }
+    .contact-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+    .contact-card i { font-size: 28px; color: var(--primary); margin-bottom: 10px; }
+    .contact-card h3 { margin-bottom: 6px; font-size: 1.05rem; }
+    .contact-card p, .contact-card a { font-size: 0.92rem; color: #475467; line-height: 1.7; text-decoration: none; }
+    .contact-card a:hover { color: var(--primary); }
+    .back { display: inline-block; margin-bottom: 16px; color: var(--primary); font-weight: 700; text-decoration: none; }
+    .map-wrap { margin-top: 28px; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); height: 320px; }
+    .map-wrap iframe { width: 100%; height: 100%; border: 0; }
+  </style>
+</head>
+<body>
+  <nav class="navbar" style="position: sticky; top:0; background:#fff; z-index:10; border-bottom:1px solid #e8edf3;">
+    <div class="container nav-inner" style="display:flex; justify-content:space-between; align-items:center; max-width:1200px; margin:auto; padding:16px 20px;">
+      <a href="./index.html" class="brand" style="display:flex; align-items:center; gap:10px; font-weight:800; color:#101828; text-decoration:none;">
+        <div style="width:40px; height:40px; background:#4f46e5; color:#fff; border-radius:10px; display:grid; place-items:center;"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        Malik Service
+      </a>
+      <a href="./index.html" style="color:#4f46e5; font-weight:700; text-decoration:none;">← Beranda</a>
+    </div>
+  </nav>
+
+  <main class="contact-wrap">
+    <a href="./index.html" class="back">← Kembali ke Beranda</a>
+    <h1>Hubungi Kami</h1>
+    <p style="color:#667085;">Kami siap membantu Anda. Pilih saluran komunikasi yang paling nyaman.</p>
+
+    <div class="contact-grid">
+      <div class="contact-card">
+        <i class="fa-brands fa-whatsapp" style="color:#25D366;"></i>
+        <h3>WhatsApp</h3>
+        <p>Respons cepat di jam operasional.</p>
+        <a href="https://wa.me/6285713087659" target="_blank" rel="noopener">0857-1308-7659 →</a>
+      </div>
+      <div class="contact-card">
+        <i class="fa-regular fa-envelope"></i>
+        <h3>Email</h3>
+        <p>Untuk pertanyaan detail atau kerja sama.</p>
+        <a href="mailto:thumbtackid@gmail.com">thumbtackid@gmail.com →</a>
+      </div>
+      <div class="contact-card">
+        <i class="fa-solid fa-location-dot"></i>
+        <h3>Alamat Toko</h3>
+        <p>Silakan datang langsung untuk konsultasi atau pengambilan barang.</p>
+        <p><strong>Semarang, Jawa Tengah</strong></p>
+      </div>
+      <div class="contact-card">
+        <i class="fa-regular fa-clock"></i>
+        <h3>Jam Operasional</h3>
+        <p>Senin – Sabtu: 08.00 – 20.00 WIB<br>Minggu: 09.00 – 17.00 WIB</p>
+      </div>
+    </div>
+
+    <div class="map-wrap">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.2435949048736!2d110.42045831477303!3d-7.005295994962411!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e708b1a2d6c9b0b%3A0x2b3e2b6c6d3e4b6c!2sSemarang!5e0!3m2!1sen!2sid!4v1620000000000!5m2!1sen!2sid" allowfullscreen loading="lazy"></iframe>
+    </div>
+  </main>
+
+  <footer class="footer" style="background:#101828; color:#98a2b3; padding:30px 0; margin-top:60px; text-align:center; font-size:12px;">
+    <div class="container">© 2026 Malik Service. Hak cipta dilindungi.</div>
+  </footer>
+</body>
+</html>

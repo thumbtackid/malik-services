@@ -270,7 +270,7 @@ async function loadNotifications() {
   const badge = document.getElementById('badgeNotif');
   if (!list) return;
 
-  const unreadCount = data.filter(n => !n.is_read).length;
+  const unreadCount = (data || []).filter(n => !n.is_read).length;
   if (badge) {
     if (unreadCount > 0) { badge.textContent = unreadCount; badge.classList.remove('hidden'); }
     else { badge.classList.add('hidden'); }
@@ -322,7 +322,7 @@ async function loadKasirProducts() {
   list.innerHTML = data.map(p => `
     <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:12px; border-radius:8px; background:white;">
       <div style="display:flex; align-items:center; gap:12px;">
-        <img src="${p.image_url || 'https://via.placeholder.com/40?text=-'}" style="width:40px; height:40px; object-fit:cover; border-radius:6px;">
+        <img src="${p.image_url || 'https://via.placeholder.com/40?text=-'}" style="width:40px; height:40px; object-fit:cover; border-radius:6px;" alt="">
         <div>
           <strong>${escapeHTML(p.nama)}</strong><br>
           <small>Rp ${(p.harga || 0).toLocaleString('id-ID')} | Stok: ${p.stok || 0}</small>
@@ -417,7 +417,7 @@ async function loadProduk() {
   if (!data || data.length === 0) { list.innerHTML = '<p>Belum ada produk.</p>'; return; }
   
   list.innerHTML = data.map(p => `
-    <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:16px; border-radius:12px; background:var(--bg-main);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:16px; border-radius:12px; background:var(--bg-main); flex-wrap:wrap; gap:12px;">
       <div style="display:flex; align-items:center; gap:16px;">
         <img src="${p.image_url || 'https://via.placeholder.com/60?text=No+Image'}" alt="${escapeHTML(p.nama)}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">
         <span style="font-weight:600;">${escapeHTML(p.nama)} <br> <small style="color:var(--text-muted);">Rp ${(p.harga || 0).toLocaleString('id-ID')} | Stok: ${p.stok || 0}</small></span>
@@ -444,7 +444,7 @@ document.getElementById("formProduk")?.addEventListener("submit", async (e) => {
   try {
     if (fileGambar) {
       if (fileGambar.size > 2 * 1024 * 1024) throw new Error("Gambar maksimal 2MB!");
-      const ext = fileGambar.name.split('.').pop();
+      const ext = fileGambar.name.split('.').pop().toLowerCase();
       const filePath = `produk_${Date.now()}.${ext}`;
       const { error: upErr } = await supabaseClient.storage.from('product-images').upload(filePath, fileGambar);
       if (upErr) throw upErr;
@@ -529,7 +529,7 @@ async function loadAdminChat(userId) {
   const { data } = await supabaseClient.from('chats').select('*').or(`and(sender_id.eq.${userId},receiver_id.eq.${currentUser.id}),and(sender_id.eq.${currentUser.id},receiver_id.eq.${userId})`).order('created_at');
   const chatBox = document.getElementById('adminChatBox');
   if(!chatBox) return;
-  chatBox.innerHTML = data.map(c => `<div class="chat-msg ${c.sender_id === currentUser.id ? 'chat-me' : 'chat-them'}">${escapeHTML(c.pesan)}</div>`).join('');
+  chatBox.innerHTML = (data || []).map(c => `<div class="chat-msg ${c.sender_id === currentUser.id ? 'chat-me' : 'chat-them'}">${escapeHTML(c.pesan)}</div>`).join('');
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
@@ -594,7 +594,7 @@ async function cetakNota(orderId) {
         <div class="row total"><span>TOTAL</span><span>${biaya}</span></div>
         <div class="line"></div>
         <div class="footer">
-          <p>Status Kerja: <strong>${order.status.toUpperCase()}</strong></p>
+          <p>Status Kerja: <strong>${(order.status || '-').toUpperCase()}</strong></p>
           <p>Pembayaran: <strong>${(order.payment_status || 'unpaid').toUpperCase()}</strong></p>
           <p>Terima kasih telah menggunakan layanan kami.</p>
         </div>
@@ -704,20 +704,23 @@ document.getElementById("btnSaveAlamat")?.addEventListener("click", async () => 
 });
 
 // ==========================================
-// 9. FITUR KELOLA ARTIKEL & IKLAN
+// 9. FITUR KELOLA ARTIKEL & IKLAN (PERBAIKAN)
 // ==========================================
 async function loadArtikelAdmin() {
   const list = document.getElementById('artikelListAdmin');
   if (!list) return;
   const { data } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
-  
+
   if (!data || data.length === 0) { list.innerHTML = '<p>Belum ada artikel.</p>'; return; }
-  
+
   list.innerHTML = data.map(a => `
-    <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:16px; border-radius:12px; background:var(--bg-main);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:16px; border-radius:12px; background:var(--bg-main); flex-wrap:wrap; gap:12px;">
       <div style="display:flex; align-items:center; gap:16px;">
-        <img src="${a.image_url || 'https://via.placeholder.com/60?text=No+Image'}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;">
-        <span><strong>${escapeHTML(a.title)}</strong><br><small>${new Date(a.created_at).toLocaleDateString('id-ID')}</small></span>
+        <img src="${a.image_url || 'https://via.placeholder.com/60?text=No+Image'}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;" alt="">
+        <div>
+          <strong>${escapeHTML(a.title)}</strong><br>
+          <small style="color:var(--text-muted);">${escapeHTML(a.category || 'Tips')} • ${new Date(a.created_at).toLocaleDateString('id-ID')}</small>
+        </div>
       </div>
       <button class="btn btn-danger" style="padding:6px 12px;" onclick="hapusArtikel('${a.id}')"><i class="fa-solid fa-trash"></i></button>
     </div>
@@ -727,22 +730,26 @@ async function loadArtikelAdmin() {
 document.getElementById("formArtikel")?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = document.getElementById("btnTambahArtikel");
-  const title = document.getElementById("artTitle").value;
+  const title = document.getElementById("artTitle").value.trim();
   const content = document.getElementById("artContent").value;
+  const category = document.getElementById("artCategory")?.value || 'Tips';
+  const author = document.getElementById("artAuthor")?.value.trim() || 'Admin';
   const file = document.getElementById("artImage").files[0];
   btn.textContent = "Mengunggah..."; btn.disabled = true;
   let imageUrl = null;
 
   try {
     if (file) {
-      const ext = file.name.split('.').pop();
+      if (file.size > 3 * 1024 * 1024) throw new Error("Gambar maksimal 3MB!");
+      const ext = file.name.split('.').pop().toLowerCase();
       const filePath = `artikel_${Date.now()}.${ext}`;
       const { error: upErr } = await supabaseClient.storage.from('product-images').upload(filePath, file);
       if (upErr) throw upErr;
       const { data: urlData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
       imageUrl = urlData.publicUrl;
     }
-    await supabaseClient.from('articles').insert({ title, content, image_url: imageUrl });
+    const { error } = await supabaseClient.from('articles').insert({ title, content, image_url: imageUrl, category, author });
+    if (error) throw error;
     document.getElementById("formArtikel").reset();
     loadArtikelAdmin();
     alert("Artikel berhasil dipublish!");
@@ -760,14 +767,17 @@ async function loadIklanAdmin() {
   const list = document.getElementById('iklanListAdmin');
   if (!list) return;
   const { data } = await supabaseClient.from('ads').select('*').order('created_at', { ascending: false });
-  
+
   if (!data || data.length === 0) { list.innerHTML = '<p>Belum ada iklan.</p>'; return; }
-  
+
   list.innerHTML = data.map(a => `
-    <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:16px; border-radius:12px; background:var(--bg-main);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border); padding:16px; border-radius:12px; background:var(--bg-main); flex-wrap:wrap; gap:12px;">
       <div style="display:flex; align-items:center; gap:16px;">
-        <img src="${a.image_url}" style="width:120px; height:60px; object-fit:cover; border-radius:8px;">
-        <span><strong>${escapeHTML(a.title)}</strong><br><small>${a.link_url}</small></span>
+        <img src="${a.image_url}" style="width:120px; height:60px; object-fit:cover; border-radius:8px;" alt="">
+        <div>
+          <strong>${escapeHTML(a.title)}</strong><br>
+          <small style="color:var(--text-muted);">${escapeHTML(a.link_url)}</small>
+        </div>
       </div>
       <button class="btn btn-danger" style="padding:6px 12px;" onclick="hapusIklan('${a.id}')"><i class="fa-solid fa-trash"></i></button>
     </div>
@@ -777,19 +787,21 @@ async function loadIklanAdmin() {
 document.getElementById("formIklan")?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = document.getElementById("btnTambahIklan");
-  const title = document.getElementById("adsTitle").value;
-  const link_url = document.getElementById("adsLink").value;
+  const title = document.getElementById("adsTitle").value.trim();
+  const link_url = document.getElementById("adsLink").value.trim();
   const file = document.getElementById("adsImage").files[0];
+  if (!file) return alert("Pilih gambar iklan!");
   btn.textContent = "Mengunggah..."; btn.disabled = true;
 
   try {
-    const ext = file.name.split('.').pop();
+    const ext = file.name.split('.').pop().toLowerCase();
     const filePath = `iklan_${Date.now()}.${ext}`;
     const { error: upErr } = await supabaseClient.storage.from('product-images').upload(filePath, file);
     if (upErr) throw upErr;
     const { data: urlData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
-    
-    await supabaseClient.from('ads').insert({ title, link_url, image_url: urlData.publicUrl });
+
+    const { error } = await supabaseClient.from('ads').insert({ title, link_url, image_url: urlData.publicUrl, is_active: true });
+    if (error) throw error;
     document.getElementById("formIklan").reset();
     loadIklanAdmin();
     alert("Iklan berhasil ditambahkan!");

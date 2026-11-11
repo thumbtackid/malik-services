@@ -1,4 +1,4 @@
-const CACHE_NAME = "malik-service-v14"; // Naikkan versi jika ada update besar
+const CACHE_NAME = "malik-service-v21";
 
 const ASSETS_TO_CACHE = [
   "./",
@@ -6,6 +6,12 @@ const ASSETS_TO_CACHE = [
   "./login.html",
   "./dashboard.html",
   "./admin.html",
+  "./artikel.html",
+  "./about.html",
+  "./contact.html",
+  "./privacy-policy.html",
+  "./terms.html",
+  "./disclaimer.html",
   "./css/style.css",
   "./js/supabase.js",
   "./js/auth.js",
@@ -67,7 +73,7 @@ self.addEventListener("fetch", (event) => {
       .catch(async () => {
         console.log("Offline, mengambil dari cache:", request.url);
         const cachedResponse = await caches.match(request);
-        
+
         if (cachedResponse) return cachedResponse;
 
         if (request.mode === "navigate") {

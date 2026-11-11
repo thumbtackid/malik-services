@@ -24,7 +24,7 @@
 </head>
 <body class="app-body">
   <aside class="sidebar">
-    <div class="brand"><img src="" class="brand-logo" style="height:32px;"> <span class="brand-text">Admin</span></div>
+    <div class="brand"><img src="" class="brand-logo" style="height:32px;" alt=""> <span class="brand-text">Admin</span></div>
     <nav class="side-nav">
       <a href="#" class="active" onclick="showTab('orders')"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
       <a href="#" onclick="showTab('verifikasi')"><i class="fa-solid fa-money-check-dollar"></i> Verifikasi Bayar <span class="notif-badge hidden" id="badgeVerif">0</span></a>
@@ -44,7 +44,6 @@
   </aside>
 
   <main class="main">
-    <!-- DASHBOARD -->
     <div id="tab-orders">
       <div class="stats-grid">
         <div class="stat-card primary"><h4>Total Pendapatan</h4><div class="value" id="statPendapatan">Rp 0</div></div>
@@ -70,13 +69,11 @@
       </div>
     </div>
 
-    <!-- VERIFIKASI PEMBAYARAN -->
     <div id="tab-verifikasi" class="card hidden">
       <h2 style="margin-bottom:24px;"><i class="fa-solid fa-money-check-dollar"></i> Verifikasi Pembayaran Masuk</h2>
       <div id="verifList" style="display:flex; flex-direction:column; gap:16px;"></div>
     </div>
 
-    <!-- NOTIFIKASI -->
     <div id="tab-notifikasi" class="card hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
         <h2><i class="fa-solid fa-bell"></i> Notifikasi</h2>
@@ -88,7 +85,6 @@
       <div id="notifList"></div>
     </div>
 
-    <!-- KASIR -->
     <div id="tab-kasir" class="card hidden">
       <h2 style="margin-bottom:24px;">Kasir / Point of Sale</h2>
       <div class="grid-2">
@@ -110,7 +106,6 @@
       </div>
     </div>
 
-    <!-- PRODUK -->
     <div id="tab-produk" class="card hidden">
       <h2 style="margin-bottom:24px;">Katalog Produk</h2>
       <form id="formProduk" style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
@@ -123,7 +118,6 @@
       <div id="produkList" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
-    <!-- LAYANAN -->
     <div id="tab-layanan" class="card hidden">
       <h2 style="margin-bottom:24px;">Edit Layanan</h2>
       <form id="formLayanan" style="display:flex; gap:16px; margin-bottom:24px;">
@@ -133,7 +127,6 @@
       <div id="layananList" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
-    <!-- CHAT -->
     <div id="tab-chat" class="card hidden">
       <h2 style="margin-bottom:24px;">Balas Chat User</h2>
       <div style="display:flex; gap:24px; flex-wrap: wrap;">
@@ -148,7 +141,6 @@
       </div>
     </div>
 
-    <!-- LAPORAN KEUANGAN -->
     <div id="tab-laporan" class="card hidden">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
         <h2><i class="fa-solid fa-chart-line"></i> Laporan Keuangan</h2>
@@ -193,19 +185,27 @@
       </div>
     </div>
 
-    <!-- KELOLA ARTIKEL -->
+    <!-- KELOLA ARTIKEL — SUDAH DIPERBAIKI dengan kategori & author -->
     <div id="tab-artikel" class="card hidden">
       <h2 style="margin-bottom:24px;">Kelola Artikel</h2>
       <form id="formArtikel" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:24px;">
         <input type="text" id="artTitle" placeholder="Judul Artikel" required style="padding:14px; border-radius:12px; border:1px solid var(--border);">
-        <textarea id="artContent" placeholder="Isi Artikel..." required rows="5" style="padding:14px; border-radius:12px; border:1px solid var(--border);"></textarea>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <select id="artCategory" style="padding:14px; border-radius:12px; border:1px solid var(--border); flex:1; min-width:150px;">
+            <option value="Tips">Tips</option>
+            <option value="Berita">Berita</option>
+            <option value="Panduan">Panduan</option>
+            <option value="Review">Review</option>
+          </select>
+          <input type="text" id="artAuthor" placeholder="Nama Penulis" value="Admin" style="padding:14px; border-radius:12px; border:1px solid var(--border); flex:1; min-width:150px;">
+        </div>
+        <textarea id="artContent" placeholder="Isi Artikel..." required rows="6" style="padding:14px; border-radius:12px; border:1px solid var(--border);"></textarea>
         <input type="file" id="artImage" accept="image/*" style="padding:10px; border-radius:12px; border:1px solid var(--border);">
         <button type="submit" class="btn btn-primary" id="btnTambahArtikel">Publish Artikel</button>
       </form>
       <div id="artikelListAdmin" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
-    <!-- KELOLA IKLAN -->
     <div id="tab-iklan" class="card hidden">
       <h2 style="margin-bottom:24px;">Kelola Iklan (Banner)</h2>
       <form id="formIklan" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:24px;">
@@ -217,7 +217,6 @@
       <div id="iklanListAdmin" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
-    <!-- SETTING -->
     <div id="tab-setting" class="card hidden">
       <h2 style="margin-bottom:24px;">Pengaturan Web & Pembayaran</h2>
       <div class="grid-2">

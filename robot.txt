@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /dashboard.html
+Disallow: /login.html
+Disallow: /js/
+Disallow: /css/
+
+Sitemap: https://malikservice.my.id/sitemap.xml
