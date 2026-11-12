@@ -24,9 +24,26 @@
 }
 
 /* ====== RESET & BASE ====== */
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-html, body { overflow-x: hidden; scroll-behavior: smooth; }
-body { background-color: var(--bg-main); color: var(--text-main); line-height: 1.6; font-size: 14px; }
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+  font-family: 'Plus Jakarta Sans', sans-serif; 
+  -webkit-tap-highlight-color: transparent; 
+}
+
+html, body { 
+  overflow-x: hidden; 
+  scroll-behavior: smooth; 
+}
+
+body { 
+  background-color: var(--bg-main); 
+  color: var(--text-main); 
+  line-height: 1.6; 
+  font-size: 14px; 
+}
+
 a { text-decoration: none; color: inherit; }
 .hidden { display: none !important; }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
@@ -49,19 +66,41 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* ====== BUTTONS ====== */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; border: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 0.9rem; position: relative; }
+.btn { 
+  display: inline-flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 8px; 
+  padding: 12px 24px; 
+  border-radius: var(--radius-md); 
+  font-weight: 600; 
+  cursor: pointer; 
+  border: none; 
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+  font-size: 0.9rem; 
+  position: relative; 
+}
 .btn:active { transform: scale(0.96); }
 .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
 .btn-primary { background: linear-gradient(135deg, var(--primary), #7c3aed); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
 .btn-primary:hover { box-shadow: var(--shadow-glow); transform: translateY(-2px); }
 .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-main); }
 .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: translateY(-2px); }
+.btn-light { background: #f1f5f9; color: var(--text-main); }
+.btn-light:hover { background: #e2e8f0; }
 .btn-danger { background: #fee2e2; color: var(--danger); }
 .btn-danger:hover { background: var(--danger); color: white; transform: translateY(-2px); }
 .btn-block { width: 100%; }
 
 /* ====== CARDS & LAYOUT ====== */
-.card { background: var(--bg-card); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); transition: all 0.3s ease; }
+.card { 
+  background: var(--bg-card); 
+  border-radius: var(--radius-lg); 
+  padding: 28px; 
+  box-shadow: var(--shadow-sm); 
+  border: 1px solid var(--border); 
+  transition: all 0.3s ease; 
+}
 .card:hover { box-shadow: var(--shadow-lg); border-color: #c7d2fe; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
@@ -154,8 +193,87 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 .animate-in { animation: slideUp 0.5s ease forwards; opacity: 0; }
 
-/* ====== MOBILE (HP) ====== */
+/* =========================================
+   MEDIA QUERY RESPONSIF (PERBAIKAN UNTUK HP)
+   ========================================= */
 @media (max-width: 768px) {
+  /* 1. PERBAIKAN NAVBAR & LAYOUT UTAMA */
+  .navbar .container {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px !important;
+    width: 100%;
+    padding-top: 8px;
+    border-top: 1px solid #e8edf3;
+  }
+
+  .nav-links a {
+    font-size: 13px !important;
+    padding: 4px 0;
+  }
+
+  .nav-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* 2. PERBAIKAN HERO SECTION (Teks tidak mentok) */
+  .hero {
+    padding: 40px 0 !important;
+  }
+
+  .hero h1 {
+    font-size: 28px !important;
+    padding: 0 10px;
+  }
+
+  .hero p {
+    font-size: 14px !important;
+    padding: 0 15px;
+  }
+
+  /* 3. PERBAIKAN BANNER IKLAN */
+  .banner-wrapper {
+    height: 150px !important;
+  }
+  
+  .banner-wrapper img {
+    height: 100% !important;
+    object-fit: cover;
+  }
+
+  /* 4. PERBAIKAN GRID (Layanan, Artikel, Tentang) */
+  #layanan .container > div[style*="grid-template-columns"],
+  #artikelTerbaruList {
+    grid-template-columns: 1fr !important;
+  }
+
+  #tentang .container {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+
+  #tentang .container > div:first-child {
+    min-height: 200px !important;
+  }
+
+  /* 5. PERBAIKAN FOOTER */
+  .footer .container > div:first-child {
+    grid-template-columns: 1fr !important;
+    text-align: center;
+  }
+  
+  .footer .brand {
+    justify-content: center;
+  }
+
+  /* 6. PERBAIKAN APP LAYOUT (Dashboard / Admin) */
   .app-body { flex-direction: column; }
   .main { margin-left: 0; width: 100%; padding: 20px; }
   .sidebar { width: 100%; height: auto; position: relative; padding: 16px; border-right: none; border-bottom: 1px solid var(--border); flex-direction: column; align-items: flex-start; }

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#101828">
   
-  <!-- GOOGLE SEARCH CONSOLE VERIFICATION -->
+  <!-- GOOGLE SEARCH CONSOLE VERIFICATION (Metode HTML Tag) -->
   <meta name="google-site-verification" content="gtvHXhKTCBvbZfg6qT0Z0_0LDyDZ99V_MT-faHnpi8I" />
 
   <!-- FAVICON -->
@@ -24,7 +24,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7329937149040108" crossorigin="anonymous"></script>
   
-  <!-- SCHEMA.ORG UNTUK GOOGLE (PENDIRI DITAMBAHKAN) -->
+  <!-- SCHEMA.ORG UNTUK GOOGLE -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -57,42 +57,89 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 
   <style>
+    /* CSS Khusus Halaman Ini (Mencegah Layout Mentok di HP) */
     .brand small { display:block; color:#98a2b3; font-size:9px; letter-spacing:1.6px; line-height:1.2; font-weight:700; }
+    
+    .nav-links a { color: #667085; text-decoration: none; font-weight: 600; transition: 0.2s; }
+    .nav-links a:hover { color: #4f46e5; }
+
+    /* PERBAIKAN RESPONSIF UNTUK HP */
+    @media (max-width: 768px) {
+      .navbar .container {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+      }
+      .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px !important;
+        width: 100%;
+        padding-top: 8px;
+        border-top: 1px solid #e8edf3;
+      }
+      .nav-links a { font-size: 13px !important; }
+      
+      .nav-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      
+      .hero { padding: 40px 0 !important; }
+      .hero h1 { font-size: 28px !important; }
+      .hero p { font-size: 14px !important; }
+      
+      .banner-wrapper { height: 150px !important; }
+      .banner-wrapper img { height: 100% !important; object-fit: cover; }
+      
+      #layanan .container > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+      #tentang .container { grid-template-columns: 1fr !important; gap: 24px !important; }
+      #tentang .container > div:first-child { min-height: 200px !important; }
+      
+      .footer .container > div:first-child { grid-template-columns: 1fr !important; text-align: center; }
+      .footer .brand { justify-content: center; }
+    }
   </style>
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar" style="position:sticky;top:0;background:#fff;z-index:1000;border-bottom:1px solid #e8edf3;padding:16px 0;">
     <div class="container" style="display:flex;justify-content:space-between;align-items:center;max-width:1200px;margin:auto;padding:0 20px;">
+      
       <a href="./index.html" class="brand" style="display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;font-size:20px;color:#101828;">
         <div style="width:40px;height:40px;background:#4f46e5;color:#fff;border-radius:10px;display:grid;place-items:center;"><i class="fa-solid fa-screwdriver-wrench"></i></div>
         <span>Malik Service<small>REPAIR • CARE • SOLUTIONS</small></span>
       </a>
+      
       <div class="nav-links" id="navLinks" style="display:flex;gap:24px;align-items:center;">
-        <a href="#beranda" style="color:#667085;text-decoration:none;font-weight:600;">Beranda</a>
-        <a href="#layanan" style="color:#667085;text-decoration:none;font-weight:600;">Layanan</a>
-        <a href="./artikel.html" style="color:#667085;text-decoration:none;font-weight:600;">Artikel</a>
-        <a href="#tentang" style="color:#667085;text-decoration:none;font-weight:600;">Tentang</a>
-        <a href="./contact.html" style="color:#667085;text-decoration:none;font-weight:600;">Kontak</a>
+        <a href="#beranda">Beranda</a>
+        <a href="#layanan">Layanan</a>
+        <a href="./artikel.html">Artikel</a>
+        <a href="#tentang">Tentang</a>
+        <a href="./contact.html">Kontak</a>
       </div>
+      
       <div class="nav-actions" style="display:flex;gap:10px;">
-        <a href="./login.html" class="btn btn-light" id="btnLoginNav">Masuk</a>
+        <a href="./login.html" class="btn btn-light" id="btnLoginNav" style="padding:8px 16px;font-size:14px;">Masuk</a>
         <a href="./dashboard.html" class="btn btn-primary hidden" id="btnDashboardNav">Dashboard</a>
         <button class="btn btn-light hidden" id="btnLogoutNav">Keluar</button>
       </div>
+      
     </div>
   </nav>
 
   <main>
-    <section class="hero" id="beranda" style="padding:60px 20px; background:linear-gradient(135deg,#e0e7ff,#f3e8ff);">
-      <div class="container" style="max-width:1160px;margin:auto;">
+    <!-- Hero Section -->
+    <section class="hero" id="beranda" style="padding:60px 0; background:linear-gradient(135deg,#e0e7ff,#f3e8ff);">
+      <div class="container" style="max-width:1160px;margin:auto;padding:0 20px;">
         <div style="text-align:center;max-width:700px;margin:auto;">
-          <h1 style="font-size:clamp(28px,4vw,48px);line-height:1.15;letter-spacing:-1.5px;margin-bottom:16px;">Perangkat Bermasalah? <span style="color:#4f46e5;">Kami Bantu</span> Solusinya.</h1>
+          <h1 style="font-size:clamp(28px,5vw,48px);line-height:1.2;letter-spacing:-1.5px;margin-bottom:16px;color:#101828;">Perangkat Bermasalah? <span style="color:#4f46e5;">Kami Bantu</span> Solusinya.</h1>
           <p style="color:#475467;font-size:15px;line-height:1.8;margin-bottom:24px;">Layanan perbaikan HP, laptop, komputer, TV, dan elektronik rumah tangga di Semarang. Konsultasi gratis, garansi servis 7 hari, dan pemesanan online yang mudah.</p>
           <a href="./login.html" class="btn btn-primary" style="display:inline-block;padding:14px 28px;text-decoration:none;">Mulai Pesan <i class="fa-solid fa-arrow-right"></i></a>
         </div>
 
-        <div id="bannerIklanContainer" class="hidden" style="margin-top:32px;max-width:1000px;margin-left:auto;margin-right:auto;">
+        <!-- Banner Iklan -->
+        <div id="bannerIklanContainer" class="hidden" style="margin-top:40px;max-width:1000px;margin-left:auto;margin-right:auto;">
           <a href="#" id="bannerIklanLink" target="_blank" rel="noopener">
             <div class="banner-wrapper" style="width:100%;height:200px;overflow:hidden;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);">
               <img id="bannerIklanImg" src="" alt="Iklan" style="width:100%;height:100%;object-fit:cover;display:block;">
@@ -102,43 +149,49 @@
       </div>
     </section>
 
+    <!-- Layanan Section -->
     <section class="section" id="layanan" style="padding:70px 20px;">
       <div class="container" style="max-width:1160px;margin:auto;">
         <div style="text-align:center;margin-bottom:40px;">
           <p style="color:#4f46e5;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Layanan Kami</p>
-          <h2 style="font-size:clamp(26px,3vw,36px);line-height:1.2;letter-spacing:-1px;margin-bottom:12px;">Satu Tempat untuk Berbagai Kebutuhan Servis</h2>
+          <h2 style="font-size:clamp(26px,3vw,36px);line-height:1.2;letter-spacing:-1px;margin-bottom:12px;color:#101828;">Satu Tempat untuk Berbagai Kebutuhan Servis</h2>
           <p style="color:#667085;font-size:14px;">Pilih kategori perangkat dan konsultasikan kerusakan yang Anda alami.</p>
         </div>
+        
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:17px;">
           <article class="service-card" style="padding:25px 22px;border:1px solid #e8edf3;border-radius:19px;background:#fff;">
             <div style="width:52px;height:52px;border-radius:15px;background:#eef2ff;color:#4f46e5;display:grid;place-items:center;font-size:21px;margin-bottom:18px;"><i class="fa-solid fa-mobile-screen-button"></i></div>
-            <h3 style="font-size:15px;margin-bottom:7px;">HP & Tablet</h3>
+            <h3 style="font-size:15px;margin-bottom:7px;color:#101828;">HP & Tablet</h3>
             <p style="font-size:12px;color:#667085;line-height:1.8;">Layar, baterai, konektor charger, software, dan pemeriksaan kerusakan.</p>
           </article>
+          
           <article class="service-card" style="padding:25px 22px;border:1px solid #e8edf3;border-radius:19px;background:#fff;">
             <div style="width:52px;height:52px;border-radius:15px;background:#eef2ff;color:#4f46e5;display:grid;place-items:center;font-size:21px;margin-bottom:18px;"><i class="fa-solid fa-laptop"></i></div>
-            <h3 style="font-size:15px;margin-bottom:7px;">Laptop & Komputer</h3>
+            <h3 style="font-size:15px;margin-bottom:7px;color:#101828;">Laptop & Komputer</h3>
             <p style="font-size:12px;color:#667085;line-height:1.8;">Instalasi sistem, upgrade, perawatan, troubleshooting, dan perbaikan.</p>
           </article>
+          
           <article class="service-card" style="padding:25px 22px;border:1px solid #e8edf3;border-radius:19px;background:#fff;">
             <div style="width:52px;height:52px;border-radius:15px;background:#eef2ff;color:#4f46e5;display:grid;place-items:center;font-size:21px;margin-bottom:18px;"><i class="fa-solid fa-tv"></i></div>
-            <h3 style="font-size:15px;margin-bottom:7px;">TV & Audio</h3>
+            <h3 style="font-size:15px;margin-bottom:7px;color:#101828;">TV & Audio</h3>
             <p style="font-size:12px;color:#667085;line-height:1.8;">Pemeriksaan TV, speaker, perangkat audio, dan komponen pendukung.</p>
           </article>
+          
           <article class="service-card" style="padding:25px 22px;border:1px solid #e8edf3;border-radius:19px;background:#fff;">
             <div style="width:52px;height:52px;border-radius:15px;background:#eef2ff;color:#4f46e5;display:grid;place-items:center;font-size:21px;margin-bottom:18px;"><i class="fa-solid fa-house"></i></div>
-            <h3 style="font-size:15px;margin-bottom:7px;">Elektronik Rumah</h3>
+            <h3 style="font-size:15px;margin-bottom:7px;color:#101828;">Elektronik Rumah</h3>
             <p style="font-size:12px;color:#667085;line-height:1.8;">Konsultasi perbaikan mesin cuci, kulkas, dispenser, dan perangkat lainnya.</p>
           </article>
         </div>
       </div>
     </section>
 
+    <!-- Artikel Section -->
     <section class="section" id="artikel" style="background:#f8fafc;padding:70px 20px;border-top:1px solid #e8edf3;">
       <div class="container" style="max-width:1160px;margin:auto;">
         <div style="text-align:center;margin-bottom:32px;">
           <p style="color:#4f46e5;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Info & Tips</p>
-          <h2 style="font-size:clamp(26px,3vw,36px);line-height:1.2;letter-spacing:-1px;margin-bottom:8px;">Artikel Terbaru</h2>
+          <h2 style="font-size:clamp(26px,3vw,36px);line-height:1.2;letter-spacing:-1px;margin-bottom:8px;color:#101828;">Artikel Terbaru</h2>
           <p style="color:#667085;font-size:14px;">Tips perawatan perangkat dari teknisi kami.</p>
         </div>
         <div id="artikelTerbaruList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
@@ -150,6 +203,7 @@
       </div>
     </section>
 
+    <!-- Tentang Section -->
     <section class="section" id="tentang" style="padding:70px 20px;">
       <div class="container" style="max-width:1160px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;">
         <div style="min-height:300px;border-radius:20px;background:linear-gradient(145deg,#e8eaff,#f4eaff);display:grid;place-items:center;">
@@ -157,13 +211,14 @@
         </div>
         <div>
           <p style="color:#4f46e5;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Tentang Kami</p>
-          <h2 style="font-size:32px;line-height:1.2;letter-spacing:-1px;margin:10px 0 16px;">Perbaikan dengan Komunikasi yang Jelas.</h2>
+          <h2 style="font-size:32px;line-height:1.2;letter-spacing:-1px;margin:10px 0 16px;color:#101828;">Perbaikan dengan Komunikasi yang Jelas.</h2>
           <p style="color:#667085;font-size:13px;line-height:1.9;margin-bottom:20px;">Malik Service hadir sebagai layanan perbaikan perangkat elektronik di Semarang. Kami mengutamakan transparansi biaya, estimasi di muka, dan garansi servis untuk kepuasan Anda.</p>
           <a href="./about.html" class="btn btn-outline" style="display:inline-block;padding:12px 24px;text-decoration:none;">Selengkapnya <i class="fa-solid fa-arrow-right"></i></a>
         </div>
       </div>
     </section>
 
+    <!-- Kontak Section -->
     <section class="section" id="kontak" style="padding:70px 20px;background:linear-gradient(120deg,#171b3b,#39328b);color:#fff;">
       <div class="container" style="max-width:1000px;margin:auto;text-align:center;">
         <h2 style="font-size:30px;line-height:1.2;margin-bottom:12px;">Ceritakan masalah perangkat Anda.</h2>
@@ -173,6 +228,7 @@
     </section>
   </main>
 
+  <!-- Footer -->
   <footer class="footer" style="background:#101828;color:#d0d5dd;padding:48px 20px 22px;">
     <div class="container" style="max-width:1160px;margin:auto;">
       <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;padding-bottom:35px;">
@@ -238,6 +294,7 @@
       }
 
       try {
+        // Load Banner Iklan
         const { data: ads } = await supabaseClient.from('ads').select('*').eq('is_active', true).limit(1).maybeSingle();
         if (ads && ads.image_url) {
           document.getElementById('bannerIklanContainer').classList.remove('hidden');
@@ -245,6 +302,7 @@
           document.getElementById('bannerIklanLink').href = ads.link_url || '#';
         }
 
+        // Load Artikel Terbaru
         const { data: articles } = await supabaseClient.from('articles').select('id, title, content, image_url, category, created_at').order('created_at', { ascending: false }).limit(4);
         const list = document.getElementById('artikelTerbaruList');
         if (articles && articles.length > 0) {
@@ -252,16 +310,17 @@
             const safeTitle = escapeHTML(a.title || 'Tanpa Judul');
             const safeCat = escapeHTML(a.category || 'Tips Elektronik');
             const safeImg = a.image_url ? escapeHTML(a.image_url) : 'https://images.unsplash.com/photo-1588508065123-287b28e013da?w=800&h=400&fit=crop';
-            // FIX XSS: pakai DOMPurify, BUKAN innerHTML langsung
+            
             const cleanHtml = window.DOMPurify ? DOMPurify.sanitize(a.content || '', { USE_PROFILES: { html: false } }) : '';
             const tmp = document.createElement('div'); tmp.innerHTML = cleanHtml;
             const preview = (tmp.textContent || '').slice(0, 130);
+            
             return `
               <article style="background:#fff;border:1px solid #e8edf3;border-radius:16px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;text-decoration:none;color:inherit;" onclick="window.location.href='./artikel.html?id=${encodeURIComponent(a.id)}'">
                 <img src="${safeImg}" alt="${safeTitle}" style="width:100%;height:170px;object-fit:cover;" onerror="this.src='https://images.unsplash.com/photo-1588508065123-287b28e013da?w=800&h=400&fit=crop'">
                 <div style="padding:18px;display:flex;flex-direction:column;gap:6px;">
                   <small style="color:#4f46e5;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">${safeCat}</small>
-                  <h3 style="font-size:1rem;margin:0;line-height:1.4;">${safeTitle}</h3>
+                  <h3 style="font-size:1rem;margin:0;line-height:1.4;color:#101828;">${safeTitle}</h3>
                   <p style="font-size:.85rem;color:#667085;margin:0;">${escapeHTML(preview)}...</p>
                 </div>
               </article>
