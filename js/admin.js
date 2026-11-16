@@ -725,7 +725,7 @@ function downloadCSV() {
 }
 
 // ==========================================
-// FUNGSI SIMPAN PENGATURAN (ALAMAT, DLL)
+// FUNGSI SIMPAN PENGATURAN
 // ==========================================
 document.getElementById("btnSaveLogo")?.addEventListener("click", async () => {
   await supabaseClient.from("settings").update({ logo_url: document.getElementById("logoUrl").value }).eq("id", 1);
@@ -827,9 +827,8 @@ async function bukaEditArtikel(id) {
     document.getElementById('editArtAuthor').value = a.author || 'Admin';
     
     // Isi Quill Editor dengan konten yang ada
-    // Menggunakan quillEdit yang dideklarasikan di admin.html
     if (window.quillEdit) {
-      quillEdit.root.innerHTML = a.content || '';
+      window.quillEdit.root.innerHTML = a.content || '';
     }
     
     // Scroll ke form edit
@@ -839,16 +838,28 @@ async function bukaEditArtikel(id) {
   }
 }
 
-// FUNGSI UNTUK MENYIMPAN PERUBAHAN ARTIKEL
+// FUNGSI UNTUK MENYIMPAN PERUBAHAN ARTIKEL (FIXED)
 document.getElementById("formEditArtikel")?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = document.getElementById("btnUpdateArtikel");
   const id = document.getElementById("editArtId").value;
   const title = document.getElementById("editArtTitle").value.trim();
-  const content = document.getElementById("editArtContent").value;
   const category = document.getElementById("editArtCategory").value;
   const author = document.getElementById("editArtAuthor").value.trim() || 'Admin';
   const file = document.getElementById("editArtImage").files[0];
+  
+  // AMBIL KONTEN LANGSUNG DARI EDITOR QUILL (Bukan dari input hidden)
+  let content = "";
+  if (window.quillEdit) {
+      content = window.quillEdit.root.innerHTML;
+      if (content === '<p><br></p>') content = ''; // Jika kosong
+  } else {
+      content = document.getElementById('editArtContent').value; // Fallback
+  }
+
+  if (!content || content.trim() === '') {
+      return alert("Isi artikel tidak boleh kosong! Silakan ketik sesuatu di editor.");
+  }
   
   btn.textContent = "Menyimpan..."; 
   btn.disabled = true;
