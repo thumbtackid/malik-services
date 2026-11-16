@@ -194,6 +194,8 @@
     <!-- KELOLA ARTIKEL -->
     <div id="tab-artikel" class="card hidden">
       <h2 style="margin-bottom:24px;">Kelola Artikel</h2>
+      
+      <!-- FORM TAMBAH ARTIKEL -->
       <form id="formArtikel" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:24px;">
         <input type="text" id="artTitle" placeholder="Judul Artikel" required style="padding:14px; border-radius:12px; border:1px solid var(--border);">
         <div style="display:flex; gap:12px; flex-wrap:wrap;">
@@ -206,13 +208,45 @@
           <input type="text" id="artAuthor" placeholder="Nama Penulis" value="Admin" style="padding:14px; border-radius:12px; border:1px solid var(--border); flex:1; min-width:150px;">
         </div>
         
-        <!-- EDITOR QUILL MENGGANTIKAN TEXTAREA -->
+        <!-- EDITOR QUILL UNTUK TAMBAH -->
         <div id="artContentEditor" style="height: 250px; background: white; border-radius: 12px;"></div>
         <input type="hidden" id="artContent" required>
         
         <input type="file" id="artImage" accept="image/*" style="padding:10px; border-radius:12px; border:1px solid var(--border);">
         <button type="submit" class="btn btn-primary" id="btnTambahArtikel">Publish Artikel</button>
       </form>
+
+      <!-- FORM EDIT ARTIKEL (Tersembunyi) -->
+      <div id="editArtikelContainer" class="hidden" style="margin-bottom:24px; border: 2px solid var(--primary); padding: 20px; border-radius: 12px; background: #f8fafc;">
+        <h3 style="margin-bottom:16px; color: var(--primary);">Edit Artikel</h3>
+        <form id="formEditArtikel" style="display:flex; flex-direction:column; gap:16px;">
+          <input type="hidden" id="editArtId">
+          <input type="text" id="editArtTitle" placeholder="Judul Artikel" required style="padding:14px; border-radius:12px; border:1px solid var(--border);">
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <select id="editArtCategory" style="padding:14px; border-radius:12px; border:1px solid var(--border); flex:1; min-width:150px;">
+              <option value="Tips">Tips</option>
+              <option value="Berita">Berita</option>
+              <option value="Panduan">Panduan</option>
+              <option value="Review">Review</option>
+            </select>
+            <input type="text" id="editArtAuthor" placeholder="Nama Penulis" style="padding:14px; border-radius:12px; border:1px solid var(--border); flex:1; min-width:150px;">
+          </div>
+          
+          <!-- EDITOR QUILL UNTUK EDIT -->
+          <div id="editArtContentEditor" style="height: 250px; background: white; border-radius: 12px;"></div>
+          <input type="hidden" id="editArtContent" required>
+          
+          <input type="file" id="editArtImage" accept="image/*" style="padding:10px; border-radius:12px; border:1px solid var(--border);">
+          <small style="color: var(--text-muted); margin-top:-8px;">*Biarkan kosong jika tidak ingin mengganti gambar.</small>
+          
+          <div style="display:flex; gap:12px;">
+            <button type="submit" class="btn btn-primary" id="btnUpdateArtikel">Simpan Perubahan</button>
+            <button type="button" class="btn btn-outline" onclick="document.getElementById('editArtikelContainer').classList.add('hidden')">Batal</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- DAFTAR ARTIKEL -->
       <div id="artikelListAdmin" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
@@ -270,7 +304,7 @@
   <!-- SCRIPT QUILL JS UNTUK EDITOR -->
   <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
   <script>
-    // Inisialisasi Quill Editor
+    // Inisialisasi Quill Editor untuk TAMBAH artikel
     var quill = new Quill('#artContentEditor', {
       theme: 'snow',
       placeholder: 'Tulis isi artikel di sini...',
@@ -285,16 +319,38 @@
       }
     });
 
-    // Saat form artikel di-submit, pindahkan HTML dari Quill ke input hidden
+    // Inisialisasi Quill Editor untuk EDIT artikel
+    var quillEdit = new Quill('#editArtContentEditor', {
+      theme: 'snow',
+      placeholder: 'Edit isi artikel di sini...',
+      modules: {
+        toolbar: [
+          [{ 'header': [2, 3, false] }],
+          ['bold', 'italic', 'underline'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ['link'],
+          ['clean']
+        ]
+      }
+    });
+
+    // Saat form tambah artikel di-submit, pindahkan HTML dari Quill ke input hidden
     const formArtikel = document.getElementById('formArtikel');
     if(formArtikel) {
       formArtikel.addEventListener('submit', function(e) {
         var htmlContent = quill.root.innerHTML;
-        // Validasi: Jika isinya kosong (hanya <p><br></p>), maka kosongkan
-        if (htmlContent === '<p><br></p>') {
-          htmlContent = '';
-        }
+        if (htmlContent === '<p><br></p>') htmlContent = '';
         document.getElementById('artContent').value = htmlContent;
+      });
+    }
+
+    // Saat form edit artikel di-submit, pindahkan HTML dari Quill Edit ke input hidden
+    const formEditArtikel = document.getElementById('formEditArtikel');
+    if(formEditArtikel) {
+      formEditArtikel.addEventListener('submit', function(e) {
+        var htmlContentEdit = quillEdit.root.innerHTML;
+        if (htmlContentEdit === '<p><br></p>') htmlContentEdit = '';
+        document.getElementById('editArtContent').value = htmlContentEdit;
       });
     }
 
