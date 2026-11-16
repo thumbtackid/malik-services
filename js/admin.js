@@ -782,21 +782,18 @@ document.getElementById("formArtikel")?.addEventListener("submit", async (e) => 
   e.preventDefault();
   const btn = document.getElementById("btnTambahArtikel");
   const title = document.getElementById("artTitle").value.trim();
+  
+  // Ambil isi langsung dari Quill Editor secara aman
+  let content = typeof quill !== 'undefined' ? quill.root.innerHTML : document.getElementById("artContent").value;
+  if (content === '<p><br></p>') content = ''; // Bersihkan jika kosong
+
   const category = document.getElementById("artCategory")?.value || 'Tips';
   const author = document.getElementById("artAuthor")?.value.trim() || 'Admin';
   const file = document.getElementById("artImage").files[0];
-  
-  // AMBIL KONTEN LANGSUNG DARI EDITOR QUILL
-  let content = "";
-  if (window.quill) {
-      content = window.quill.root.innerHTML;
-      if (content === '<p><br></p>') content = ''; // Jika kosong
-  } else {
-      content = document.getElementById('artContent').value; // Fallback
-  }
 
-  if (!content || content.trim() === '') {
-      return alert("Isi artikel tidak boleh kosong! Silakan ketik sesuatu di editor.");
+  if (!title || !content) {
+    alert("Judul dan isi artikel wajib diisi!");
+    return;
   }
 
   btn.textContent = "Mengunggah..."; 
@@ -805,7 +802,7 @@ document.getElementById("formArtikel")?.addEventListener("submit", async (e) => 
 
   try {
     if (file) {
-      if (file.size > 3 * 1024 * 1024) throw new Error("Gambar maksimal 3MB!");
+      if (file.size > 3 * 1024 * 1024) throw new Error("Ukuran gambar maksimal 3MB!");
       const ext = file.name.split('.').pop().toLowerCase();
       const filePath = `artikel_${Date.now()}.${ext}`;
       const { error: upErr } = await supabaseClient.storage.from('product-images').upload(filePath, file);
@@ -813,25 +810,28 @@ document.getElementById("formArtikel")?.addEventListener("submit", async (e) => 
       const { data: urlData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
       imageUrl = urlData.publicUrl;
     }
-    
-    const { error } = await supabaseClient.from('articles').insert({ title, content, image_url: imageUrl, category, author });
-    if (error) throw error;
-    
-    document.getElementById("formArtikel").reset();
-    
-    // Kosongkan editor Quill setelah publish
-    if (window.quill) {
-        window.quill.root.innerHTML = ''; 
-    }
 
+    const { error } = await supabaseClient.from('articles').insert({ 
+      title, 
+      content, 
+      image_url: imageUrl, 
+      category, 
+      author 
+    });
+    
+    if (error) throw error;
+
+    // Reset form dan Quill editor
+    document.getElementById("formArtikel").reset();
+    if (typeof quill !== 'undefined') quill.setText(''); 
+    
     loadArtikelAdmin();
     alert("Artikel berhasil dipublish!");
   } catch (err) { 
-      alert("Gagal: " + err.message); 
-  }
-  finally { 
-      btn.textContent = "Publish Artikel"; 
-      btn.disabled = false; 
+    alert("Gagal mempublish artikel: " + err.message); 
+  } finally { 
+    btn.textContent = "Publish Artikel"; 
+    btn.disabled = false; 
   }
 });
 
@@ -856,8 +856,8 @@ async function bukaEditArtikel(id) {
     document.getElementById('editArtCategory').value = a.category || 'Tips';
     document.getElementById('editArtAuthor').value = a.author || 'Admin';
     
-    if (window.quillEdit) {
-      window.quillEdit.root.innerHTML = a.content || '';
+    if (typeof quillEdit !== 'undefined') {
+      quillEdit.root.innerHTML = a.content || '';
     }
     
     document.getElementById('editArtikelContainer').scrollIntoView({ behavior: 'smooth' });
@@ -874,21 +874,18 @@ document.getElementById("formEditArtikel")?.addEventListener("submit", async (e)
   const btn = document.getElementById("btnUpdateArtikel");
   const id = document.getElementById("editArtId").value;
   const title = document.getElementById("editArtTitle").value.trim();
+  
+  // Ambil isi langsung dari Quill Edit Editor secara aman
+  let content = typeof quillEdit !== 'undefined' ? quillEdit.root.innerHTML : document.getElementById("editArtContent").value;
+  if (content === '<p><br></p>') content = ''; 
+
   const category = document.getElementById("editArtCategory").value;
   const author = document.getElementById("editArtAuthor").value.trim() || 'Admin';
   const file = document.getElementById("editArtImage").files[0];
-  
-  // AMBIL KONTEN LANGSUNG DARI EDITOR QUILL
-  let content = "";
-  if (window.quillEdit) {
-      content = window.quillEdit.root.innerHTML;
-      if (content === '<p><br></p>') content = ''; 
-  } else {
-      content = document.getElementById('editArtContent').value; 
-  }
 
-  if (!content || content.trim() === '') {
-      return alert("Isi artikel tidak boleh kosong! Silakan ketik sesuatu di editor.");
+  if (!title || !content) {
+    alert("Judul dan isi artikel wajib diisi!");
+    return;
   }
   
   btn.textContent = "Menyimpan..."; 
@@ -898,7 +895,7 @@ document.getElementById("formEditArtikel")?.addEventListener("submit", async (e)
     let updateData = { title, content, category, author };
 
     if (file) {
-      if (file.size > 3 * 1024 * 1024) throw new Error("Gambar maksimal 3MB!");
+      if (file.size > 3 * 1024 * 1024) throw new Error("Ukuran gambar maksimal 3MB!");
       const ext = file.name.split('.').pop().toLowerCase();
       const filePath = `artikel_${Date.now()}.${ext}`;
       
