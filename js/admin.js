@@ -775,15 +775,32 @@ async function loadArtikelAdmin() {
   `).join('');
 }
 
+// ==========================================
+// PROSES TAMBAH ARTIKEL (FIXED)
+// ==========================================
 document.getElementById("formArtikel")?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = document.getElementById("btnTambahArtikel");
   const title = document.getElementById("artTitle").value.trim();
-  const content = document.getElementById("artContent").value;
   const category = document.getElementById("artCategory")?.value || 'Tips';
   const author = document.getElementById("artAuthor")?.value.trim() || 'Admin';
   const file = document.getElementById("artImage").files[0];
-  btn.textContent = "Mengunggah..."; btn.disabled = true;
+  
+  // AMBIL KONTEN LANGSUNG DARI EDITOR QUILL
+  let content = "";
+  if (window.quill) {
+      content = window.quill.root.innerHTML;
+      if (content === '<p><br></p>') content = ''; // Jika kosong
+  } else {
+      content = document.getElementById('artContent').value; // Fallback
+  }
+
+  if (!content || content.trim() === '') {
+      return alert("Isi artikel tidak boleh kosong! Silakan ketik sesuatu di editor.");
+  }
+
+  btn.textContent = "Mengunggah..."; 
+  btn.disabled = true;
   let imageUrl = null;
 
   try {
@@ -796,13 +813,26 @@ document.getElementById("formArtikel")?.addEventListener("submit", async (e) => 
       const { data: urlData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
       imageUrl = urlData.publicUrl;
     }
+    
     const { error } = await supabaseClient.from('articles').insert({ title, content, image_url: imageUrl, category, author });
     if (error) throw error;
+    
     document.getElementById("formArtikel").reset();
+    
+    // Kosongkan editor Quill setelah publish
+    if (window.quill) {
+        window.quill.root.innerHTML = ''; 
+    }
+
     loadArtikelAdmin();
     alert("Artikel berhasil dipublish!");
-  } catch (err) { alert("Gagal: " + err.message); }
-  finally { btn.textContent = "Publish Artikel"; btn.disabled = false; }
+  } catch (err) { 
+      alert("Gagal: " + err.message); 
+  }
+  finally { 
+      btn.textContent = "Publish Artikel"; 
+      btn.disabled = false; 
+  }
 });
 
 async function hapusArtikel(id) {
@@ -811,34 +841,34 @@ async function hapusArtikel(id) {
   loadArtikelAdmin();
 }
 
-// FUNGSI UNTUK MEMBUKA FORM EDIT DAN MENGISI DATA
+// ==========================================
+// FUNGSI BUKA FORM EDIT
+// ==========================================
 async function bukaEditArtikel(id) {
   try {
     const { data: a, error } = await supabaseClient.from('articles').select('*').eq('id', id).single();
     if (error) throw error;
 
-    // Tampilkan form edit
     document.getElementById('editArtikelContainer').classList.remove('hidden');
     
-    // Isi data ke dalam form
     document.getElementById('editArtId').value = a.id;
     document.getElementById('editArtTitle').value = a.title || '';
     document.getElementById('editArtCategory').value = a.category || 'Tips';
     document.getElementById('editArtAuthor').value = a.author || 'Admin';
     
-    // Isi Quill Editor dengan konten yang ada
     if (window.quillEdit) {
       window.quillEdit.root.innerHTML = a.content || '';
     }
     
-    // Scroll ke form edit
     document.getElementById('editArtikelContainer').scrollIntoView({ behavior: 'smooth' });
   } catch (err) {
     alert("Gagal mengambil data artikel: " + err.message);
   }
 }
 
-// FUNGSI UNTUK MENYIMPAN PERUBAHAN ARTIKEL (FIXED)
+// ==========================================
+// PROSES EDIT ARTIKEL (FIXED)
+// ==========================================
 document.getElementById("formEditArtikel")?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = document.getElementById("btnUpdateArtikel");
@@ -848,13 +878,13 @@ document.getElementById("formEditArtikel")?.addEventListener("submit", async (e)
   const author = document.getElementById("editArtAuthor").value.trim() || 'Admin';
   const file = document.getElementById("editArtImage").files[0];
   
-  // AMBIL KONTEN LANGSUNG DARI EDITOR QUILL (Bukan dari input hidden)
+  // AMBIL KONTEN LANGSUNG DARI EDITOR QUILL
   let content = "";
   if (window.quillEdit) {
       content = window.quillEdit.root.innerHTML;
-      if (content === '<p><br></p>') content = ''; // Jika kosong
+      if (content === '<p><br></p>') content = ''; 
   } else {
-      content = document.getElementById('editArtContent').value; // Fallback
+      content = document.getElementById('editArtContent').value; 
   }
 
   if (!content || content.trim() === '') {
@@ -867,7 +897,6 @@ document.getElementById("formEditArtikel")?.addEventListener("submit", async (e)
   try {
     let updateData = { title, content, category, author };
 
-    // Jika user mengunggah gambar baru
     if (file) {
       if (file.size > 3 * 1024 * 1024) throw new Error("Gambar maksimal 3MB!");
       const ext = file.name.split('.').pop().toLowerCase();
@@ -880,7 +909,6 @@ document.getElementById("formEditArtikel")?.addEventListener("submit", async (e)
       updateData.image_url = urlData.publicUrl;
     }
 
-    // Simpan perubahan ke database
     const { error } = await supabaseClient.from('articles').update(updateData).eq('id', id);
     if (error) throw error;
     
