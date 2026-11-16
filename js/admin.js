@@ -216,11 +216,9 @@ async function verifikasiPembayaran(orderId, isAccept) {
   const updateData = { payment_status: newStatus, verified_by: currentUser.id };
   if (isAccept) updateData.paid_at = new Date().toISOString();
 
-  // 1. Update status pembayaran
   const { error } = await supabaseClient.from('orders').update(updateData).eq('id', orderId);
   if (error) return alert("Gagal update: " + error.message);
 
-  // 2. KURANGI STOK PRODUK JIKA PEMBAYARAN DITERIMA (LUNAS)
   if (isAccept) {
     const { data: orderItems } = await supabaseClient.from('order_items').select('*').eq('order_id', orderId);
     
@@ -239,7 +237,6 @@ async function verifikasiPembayaran(orderId, isAccept) {
     }
   }
 
-  // 3. Ambil data user untuk notifikasi
   const { data: order, error: orderErr } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
 
   if (orderErr || !order) {
@@ -247,7 +244,6 @@ async function verifikasiPembayaran(orderId, isAccept) {
     loadVerifikasiList(); loadOrders(); return;
   }
   
-  // 4. Hapus gambar bukti transfer jika diterima
   if (isAccept && order.payment_proof_url) {
     try {
       const urlParts = order.payment_proof_url.split('/payment-proofs/');
@@ -261,7 +257,6 @@ async function verifikasiPembayaran(orderId, isAccept) {
     } catch (e) { console.error("Error auto-delete gambar:", e); }
   }
 
-  // 5. Kirim pesan ke user
   if (order.user_id) {
     const msg = isAccept ? "✅ Pembayaran Anda telah diverifikasi. Pesanan sedang diproses." : "❌ Bukti pembayaran ditolak. Silakan upload ulang.";
     await supabaseClient.from('chats').insert({ sender_id: currentUser.id, receiver_id: order.user_id, pesan: msg });
@@ -549,21 +544,17 @@ document.getElementById('btnAdminSend')?.addEventListener('click', async () => {
 });
 
 // ==========================================
-// FUNGSI UPDATE STATUS & STOK (SUDAH DIPERBAIKI)
+// FUNGSI UPDATE STATUS & STOK
 // ==========================================
 async function updateStatus(id, status) {
-  // 1. Ambil data pesanan
   const { data: order } = await supabaseClient.from('orders').select('*').eq('id', id).single();
   if (!order) return alert("Pesanan tidak ditemukan.");
-  if (order.status === status) return; // Jika status sama, abaikan
+  if (order.status === status) return;
 
-  // 2. Update status pesanan
   await supabaseClient.from("orders").update({ status }).eq("id", id);
 
-  // 3. Logika Stok: Kembalikan stok HANYA JIKA belum pernah dikembalikan
   if (status === 'cancel' && order.status !== 'cancel' && !order.stock_returned) {
     const { data: items } = await supabaseClient.from('order_items').select('*').eq('order_id', id);
-    
     if (items && items.length > 0) {
       for (let item of items) {
         let { data: prod } = await supabaseClient.from('products').select('stok').eq('id', item.product_id).single();
@@ -572,16 +563,13 @@ async function updateStatus(id, status) {
           await supabaseClient.from('products').update({ stok: stokBaru }).eq('id', item.product_id);
         }
       }
-      // Tandai bahwa stok sudah dikembalikan
       await supabaseClient.from('orders').update({ stock_returned: true }).eq('id', id);
       alert("Pesanan dibatalkan. Stok telah dikembalikan!");
     }
   }
 
-  // 4. Jika diubah ke 'done' dan sebelumnya stok sudah dikembalikan, potong lagi
   if (status === 'done' && order.stock_returned) {
     const { data: items } = await supabaseClient.from('order_items').select('*').eq('order_id', id);
-    
     if (items && items.length > 0) {
       for (let item of items) {
         let { data: prod } = await supabaseClient.from('products').select('stok').eq('id', item.product_id).single();
@@ -591,11 +579,9 @@ async function updateStatus(id, status) {
           await supabaseClient.from('products').update({ stok: stokBaru }).eq('id', item.product_id);
         }
       }
-      // Kembalikan penanda ke false karena stok sudah dipotong lagi
       await supabaseClient.from('orders').update({ stock_returned: false }).eq('id', id);
     }
   }
-
   loadOrders(); 
 }
 
@@ -781,7 +767,10 @@ async function loadArtikelAdmin() {
           <small style="color:var(--text-muted);">${escapeHTML(a.category || 'Tips')} • ${new Date(a.created_at).toLocaleDateString('id-ID')}</small>
         </div>
       </div>
-      <button class="btn btn-danger" style="padding:6px 12px;" onclick="hapusArtikel('${a.id}')"><i class="fa-solid fa-trash"></i></button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-outline" style="padding:6px 12px;" onclick="bukaEditArtikel('${a.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+        <button class="btn btn-danger" style="padding:6px 12px;" onclick="hapusArtikel('${a.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
     </div>
   `).join('');
 }
@@ -821,6 +810,81 @@ async function hapusArtikel(id) {
   await supabaseClient.from('articles').delete().eq('id', id);
   loadArtikelAdmin();
 }
+
+// FUNGSI UNTUK MEMBUKA FORM EDIT DAN MENGISI DATA
+async function bukaEditArtikel(id) {
+  try {
+    const { data: a, error } = await supabaseClient.from('articles').select('*').eq('id', id).single();
+    if (error) throw error;
+
+    // Tampilkan form edit
+    document.getElementById('editArtikelContainer').classList.remove('hidden');
+    
+    // Isi data ke dalam form
+    document.getElementById('editArtId').value = a.id;
+    document.getElementById('editArtTitle').value = a.title || '';
+    document.getElementById('editArtCategory').value = a.category || 'Tips';
+    document.getElementById('editArtAuthor').value = a.author || 'Admin';
+    
+    // Isi Quill Editor dengan konten yang ada
+    // Menggunakan quillEdit yang dideklarasikan di admin.html
+    if (window.quillEdit) {
+      quillEdit.root.innerHTML = a.content || '';
+    }
+    
+    // Scroll ke form edit
+    document.getElementById('editArtikelContainer').scrollIntoView({ behavior: 'smooth' });
+  } catch (err) {
+    alert("Gagal mengambil data artikel: " + err.message);
+  }
+}
+
+// FUNGSI UNTUK MENYIMPAN PERUBAHAN ARTIKEL
+document.getElementById("formEditArtikel")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("btnUpdateArtikel");
+  const id = document.getElementById("editArtId").value;
+  const title = document.getElementById("editArtTitle").value.trim();
+  const content = document.getElementById("editArtContent").value;
+  const category = document.getElementById("editArtCategory").value;
+  const author = document.getElementById("editArtAuthor").value.trim() || 'Admin';
+  const file = document.getElementById("editArtImage").files[0];
+  
+  btn.textContent = "Menyimpan..."; 
+  btn.disabled = true;
+  
+  try {
+    let updateData = { title, content, category, author };
+
+    // Jika user mengunggah gambar baru
+    if (file) {
+      if (file.size > 3 * 1024 * 1024) throw new Error("Gambar maksimal 3MB!");
+      const ext = file.name.split('.').pop().toLowerCase();
+      const filePath = `artikel_${Date.now()}.${ext}`;
+      
+      const { error: upErr } = await supabaseClient.storage.from('product-images').upload(filePath, file);
+      if (upErr) throw upErr;
+      
+      const { data: urlData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
+      updateData.image_url = urlData.publicUrl;
+    }
+
+    // Simpan perubahan ke database
+    const { error } = await supabaseClient.from('articles').update(updateData).eq('id', id);
+    if (error) throw error;
+    
+    alert("Artikel berhasil diperbarui!");
+    document.getElementById("formEditArtikel").reset();
+    document.getElementById("editArtikelContainer").classList.add('hidden');
+    loadArtikelAdmin();
+    
+  } catch (err) { 
+    alert("Gagal memperbarui artikel: " + err.message); 
+  } finally { 
+    btn.textContent = "Simpan Perubahan"; 
+    btn.disabled = false; 
+  }
+});
 
 async function loadIklanAdmin() {
   const list = document.getElementById('iklanListAdmin');
