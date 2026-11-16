@@ -50,7 +50,6 @@
   </aside>
 
   <main class="main">
-    <!-- TAB DASHBOARD / ORDERS -->
     <div id="tab-orders">
       <div class="stats-grid">
         <div class="stat-card primary"><h4>Total Pendapatan</h4><div class="value" id="statPendapatan">Rp 0</div></div>
@@ -76,13 +75,11 @@
       </div>
     </div>
 
-    <!-- TAB VERIFIKASI -->
     <div id="tab-verifikasi" class="card hidden">
       <h2 style="margin-bottom:24px;"><i class="fa-solid fa-money-check-dollar"></i> Verifikasi Pembayaran Masuk</h2>
       <div id="verifList" style="display:flex; flex-direction:column; gap:16px;"></div>
     </div>
 
-    <!-- TAB NOTIFIKASI -->
     <div id="tab-notifikasi" class="card hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
         <h2><i class="fa-solid fa-bell"></i> Notifikasi</h2>
@@ -94,7 +91,6 @@
       <div id="notifList"></div>
     </div>
 
-    <!-- TAB KASIR -->
     <div id="tab-kasir" class="card hidden">
       <h2 style="margin-bottom:24px;">Kasir / Point of Sale</h2>
       <div class="grid-2">
@@ -116,7 +112,6 @@
       </div>
     </div>
 
-    <!-- TAB PRODUK -->
     <div id="tab-produk" class="card hidden">
       <h2 style="margin-bottom:24px;">Katalog Produk</h2>
       <form id="formProduk" style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
@@ -129,7 +124,6 @@
       <div id="produkList" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
-    <!-- TAB LAYANAN -->
     <div id="tab-layanan" class="card hidden">
       <h2 style="margin-bottom:24px;">Edit Layanan</h2>
       <form id="formLayanan" style="display:flex; gap:16px; margin-bottom:24px;">
@@ -139,7 +133,6 @@
       <div id="layananList" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
-    <!-- TAB CHAT -->
     <div id="tab-chat" class="card hidden">
       <h2 style="margin-bottom:24px;">Balas Chat User</h2>
       <div style="display:flex; gap:24px; flex-wrap: wrap;">
@@ -154,7 +147,6 @@
       </div>
     </div>
 
-    <!-- TAB LAPORAN -->
     <div id="tab-laporan" class="card hidden">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
         <h2><i class="fa-solid fa-chart-line"></i> Laporan Keuangan</h2>
@@ -199,7 +191,7 @@
       </div>
     </div>
 
-    <!-- TAB KELOLA ARTIKEL -->
+    <!-- KELOLA ARTIKEL -->
     <div id="tab-artikel" class="card hidden">
       <h2 style="margin-bottom:24px;">Kelola Artikel</h2>
       
@@ -255,7 +247,6 @@
       <div id="artikelListAdmin" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
-    <!-- TAB IKLAN -->
     <div id="tab-iklan" class="card hidden">
       <h2 style="margin-bottom:24px;">Kelola Iklan (Banner)</h2>
       <form id="formIklan" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:24px;">
@@ -267,7 +258,6 @@
       <div id="iklanListAdmin" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
-    <!-- TAB SETTING -->
     <div id="tab-setting" class="card hidden">
       <h2 style="margin-bottom:24px;">Pengaturan Web & Pembayaran</h2>
       <div class="grid-2">
@@ -308,7 +298,7 @@
   <script src="./js/supabase.js"></script>
   <script src="./js/admin.js"></script>
   
-  <!-- SCRIPT QUILL JS UNTUK EDITOR -->
+  <!-- SCRIPT QUILL JS UNTUK EDITOR (Hanya Inisialisasi) -->
   <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
   <script>
     // Inisialisasi Quill Editor untuk TAMBAH artikel
@@ -340,30 +330,6 @@
         ]
       }
     });
-
-    // Ekspos ke window agar bisa dibaca oleh admin.js
-    window.quill = quill;
-    window.quillEdit = quillEdit;
-
-    // Saat form tambah artikel di-submit
-    const formArtikel = document.getElementById('formArtikel');
-    if(formArtikel) {
-      formArtikel.addEventListener('submit', function(e) {
-        var htmlContent = quill.root.innerHTML;
-        if (htmlContent === '<p><br></p>') htmlContent = '';
-        document.getElementById('artContent').value = htmlContent;
-      });
-    }
-
-    // Saat form edit artikel di-submit
-    const formEditArtikel = document.getElementById('formEditArtikel');
-    if(formEditArtikel) {
-      formEditArtikel.addEventListener('submit', function(e) {
-        var htmlContentEdit = quillEdit.root.innerHTML;
-        if (htmlContentEdit === '<p><br></p>') htmlContentEdit = '';
-        document.getElementById('editArtContent').value = htmlContentEdit;
-      });
-    }
 
     // Service Worker
     if ('serviceWorker' in navigator) {
