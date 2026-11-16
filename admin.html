@@ -50,6 +50,7 @@
   </aside>
 
   <main class="main">
+    <!-- TAB DASHBOARD / ORDERS -->
     <div id="tab-orders">
       <div class="stats-grid">
         <div class="stat-card primary"><h4>Total Pendapatan</h4><div class="value" id="statPendapatan">Rp 0</div></div>
@@ -75,11 +76,13 @@
       </div>
     </div>
 
+    <!-- TAB VERIFIKASI -->
     <div id="tab-verifikasi" class="card hidden">
       <h2 style="margin-bottom:24px;"><i class="fa-solid fa-money-check-dollar"></i> Verifikasi Pembayaran Masuk</h2>
       <div id="verifList" style="display:flex; flex-direction:column; gap:16px;"></div>
     </div>
 
+    <!-- TAB NOTIFIKASI -->
     <div id="tab-notifikasi" class="card hidden">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
         <h2><i class="fa-solid fa-bell"></i> Notifikasi</h2>
@@ -91,6 +94,7 @@
       <div id="notifList"></div>
     </div>
 
+    <!-- TAB KASIR -->
     <div id="tab-kasir" class="card hidden">
       <h2 style="margin-bottom:24px;">Kasir / Point of Sale</h2>
       <div class="grid-2">
@@ -112,6 +116,7 @@
       </div>
     </div>
 
+    <!-- TAB PRODUK -->
     <div id="tab-produk" class="card hidden">
       <h2 style="margin-bottom:24px;">Katalog Produk</h2>
       <form id="formProduk" style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
@@ -124,6 +129,7 @@
       <div id="produkList" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
+    <!-- TAB LAYANAN -->
     <div id="tab-layanan" class="card hidden">
       <h2 style="margin-bottom:24px;">Edit Layanan</h2>
       <form id="formLayanan" style="display:flex; gap:16px; margin-bottom:24px;">
@@ -133,6 +139,7 @@
       <div id="layananList" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
+    <!-- TAB CHAT -->
     <div id="tab-chat" class="card hidden">
       <h2 style="margin-bottom:24px;">Balas Chat User</h2>
       <div style="display:flex; gap:24px; flex-wrap: wrap;">
@@ -147,6 +154,7 @@
       </div>
     </div>
 
+    <!-- TAB LAPORAN -->
     <div id="tab-laporan" class="card hidden">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
         <h2><i class="fa-solid fa-chart-line"></i> Laporan Keuangan</h2>
@@ -191,7 +199,7 @@
       </div>
     </div>
 
-    <!-- KELOLA ARTIKEL -->
+    <!-- TAB KELOLA ARTIKEL -->
     <div id="tab-artikel" class="card hidden">
       <h2 style="margin-bottom:24px;">Kelola Artikel</h2>
       
@@ -208,7 +216,6 @@
           <input type="text" id="artAuthor" placeholder="Nama Penulis" value="Admin" style="padding:14px; border-radius:12px; border:1px solid var(--border); flex:1; min-width:150px;">
         </div>
         
-        <!-- EDITOR QUILL UNTUK TAMBAH -->
         <div id="artContentEditor" style="height: 250px; background: white; border-radius: 12px;"></div>
         <input type="hidden" id="artContent" required>
         
@@ -232,7 +239,6 @@
             <input type="text" id="editArtAuthor" placeholder="Nama Penulis" style="padding:14px; border-radius:12px; border:1px solid var(--border); flex:1; min-width:150px;">
           </div>
           
-          <!-- EDITOR QUILL UNTUK EDIT -->
           <div id="editArtContentEditor" style="height: 250px; background: white; border-radius: 12px;"></div>
           <input type="hidden" id="editArtContent" required>
           
@@ -246,10 +252,10 @@
         </form>
       </div>
 
-      <!-- DAFTAR ARTIKEL -->
       <div id="artikelListAdmin" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
+    <!-- TAB IKLAN -->
     <div id="tab-iklan" class="card hidden">
       <h2 style="margin-bottom:24px;">Kelola Iklan (Banner)</h2>
       <form id="formIklan" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:24px;">
@@ -261,6 +267,7 @@
       <div id="iklanListAdmin" style="display:flex; flex-direction:column; gap:12px;"></div>
     </div>
 
+    <!-- TAB SETTING -->
     <div id="tab-setting" class="card hidden">
       <h2 style="margin-bottom:24px;">Pengaturan Web & Pembayaran</h2>
       <div class="grid-2">
@@ -334,7 +341,11 @@
       }
     });
 
-    // Saat form tambah artikel di-submit, pindahkan HTML dari Quill ke input hidden
+    // Ekspos ke window agar bisa dibaca oleh admin.js
+    window.quill = quill;
+    window.quillEdit = quillEdit;
+
+    // Saat form tambah artikel di-submit
     const formArtikel = document.getElementById('formArtikel');
     if(formArtikel) {
       formArtikel.addEventListener('submit', function(e) {
@@ -344,7 +355,7 @@
       });
     }
 
-    // Saat form edit artikel di-submit, pindahkan HTML dari Quill Edit ke input hidden
+    // Saat form edit artikel di-submit
     const formEditArtikel = document.getElementById('formEditArtikel');
     if(formEditArtikel) {
       formEditArtikel.addEventListener('submit', function(e) {
