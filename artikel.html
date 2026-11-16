@@ -91,23 +91,33 @@
   <script>
     const FALLBACK = 'https://images.unsplash.com/photo-1588508065123-287b28e013da?w=800&h=400&fit=crop';
     
-    // Fungsi untuk merapikan teks mentah dari textarea lama (jika ada)
+    // FUNGSI YANG SUDAH DIPERBAIKI: Mampu mendeteksi teks biasa maupun HTML
     function formatRawTextToHTML(rawText) {
-      if (!rawText) return '';
+      if (!rawText) return '<p style="color:#ef4444; font-style:italic;"><i class="fa-solid fa-triangle-exclamation"></i> (Isi artikel ini kosong di database. Silakan edit di halaman Admin).</p>';
+      
+      // Bersihkan dari script berbahaya
       let clean = DOMPurify.sanitize(rawText, { USE_PROFILES: { html: true } });
       
-      if (!clean.includes('<p>') && !clean.includes('<br>') && !clean.includes('<div>')) {
+      // Jika isinya benar-benar kosong setelah dibersihkan
+      if (!clean || clean.trim() === '') {
+          return '<p style="color:#ef4444; font-style:italic;"><i class="fa-solid fa-triangle-exclamation"></i> (Isi artikel kosong atau berisi format yang tidak didukung oleh keamanan web).</p>';
+      }
+
+      // Deteksi apakah ini HTML asli (dari Quill Editor) atau teks mentah biasa
+      const isHtml = /<[a-z][\s\S]*>/i.test(clean);
+      
+      if (!isHtml) {
+        // Jika teks biasa (tanpa tag HTML), ubah setiap enter menjadi paragraf baru
         const lines = clean.split('\n');
         clean = lines
           .map(line => line.trim())
           .filter(line => line.length > 0)
           .map(line => `<p>${line}</p>`)
           .join('');
-      } 
-      else {
+      } else {
+        // Jika sudah HTML dari Quill, rapikan spasi berlebih
         clean = clean.replace(/(<br\s*\/?>\s*){2,}/gi, '</p><p>');
-        if (!clean.startsWith('<p>')) clean = '<p>' + clean;
-        if (!clean.endsWith('</p>')) clean = clean + '</p>';
+        if (!clean.startsWith('<p>') && !clean.startsWith('<h')) clean = '<p>' + clean;
       }
       return clean;
     }
@@ -141,7 +151,7 @@
         const date = new Date(mainArt.created_at).toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric' });
         const safeTitle = escapeHTML(mainArt.title || 'Tanpa Judul');
         
-        // Gunakan fungsi perapian teks
+        // Gunakan fungsi perapian teks yang baru
         const safeContent = formatRawTextToHTML(mainArt.content || '');
 
         const backBtn = idTerpilih ? `
